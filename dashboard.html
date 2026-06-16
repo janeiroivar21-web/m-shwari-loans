@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>M-SHWARI Dashboard</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f3f3f3;
+}
+
+.header{
+background:#49B72F;
+color:white;
+padding:20px;
+text-align:center;
+font-size:22px;
+font-weight:bold;
+position:sticky;
+top:0;
+}
+
+.tabs{
+display:flex;
+background:white;
+}
+
+.tab{
+flex:1;
+text-align:center;
+padding:18px;
+font-weight:bold;
+}
+
+.active{
+color:#49B72F;
+border-bottom:4px solid #49B72F;
+}
+
+.card{
+background:white;
+margin:15px;
+padding:20px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.balance{
+display:flex;
+justify-content:space-between;
+margin-bottom:20px;
+}
+
+.balance h2{
+color:#49B72F;
+}
+
+.loan-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+.loan-grid p{
+margin:10px 0;
+font-size:15px;
+}
+
+.action{
+background:white;
+margin:15px;
+padding:20px;
+border-radius:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-size:18px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+cursor:pointer;
+}
+
+.cards{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+padding:15px;
+}
+
+.small-card{
+background:white;
+padding:25px 10px;
+text-align:center;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+font-size:15px;
+font-weight:bold;
+}
+
+.limit-btn{
+width:90%;
+display:block;
+margin:20px auto;
+padding:18px;
+background:#49B72F;
+color:white;
+border:none;
+border-radius:15px;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+animation:shake 2s infinite;
+}
+
+@keyframes shake{
+0%{transform:translateX(0)}
+10%{transform:translateX(-5px)}
+20%{transform:translateX(5px)}
+30%{transform:translateX(-5px)}
+40%{transform:translateX(5px)}
+50%{transform:translateX(0)}
+100%{transform:translateX(0)}
+}
+
+.footer{
+height:30px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+Loans & Savings
+</div>
+
+<div class="tabs">
+<div class="tab active">M-SHWARI</div>
+<div class="tab">KCB M-PESA</div>
+</div>
+
+<div class="card">
+
+<div class="balance">
+<h2>SAVINGS</h2>
+<h2>KSH 0.00</h2>
+</div>
+
+<div class="loan-grid">
+
+<div>
+<h3>LOAN</h3>
+
+<p>Balance : <b>KSH --</b></p>
+
+<p>Limit : <b>KSH --</b></p>
+
+<p>Due Date : <b>--</b></p>
+</div>
+
+<div>
+<h3>LOCK SAVINGS</h3>
+
+<p>Savings : <b>KSH 0.00</b></p>
+
+<p>Target : <b>--</b></p>
+
+<p>Maturity Date : <b>--</b></p>
+</div>
+
+</div>
+
+</div>
+
+<div class="action" onclick="window.location.href='deposit.html'">
+    <span>💰 Deposit to M-SHWARI</span>
+    <span>▼</span>
+</div>
+
+<div class="action" onclick="window.location.href='withdraw.html'">
+    <span>🏦 Withdraw from M-SHWARI</span>
+    <span>▼</span>
+</div>
+
+<div class="cards">
+
+<div class="small-card">
+📄<br><br>
+Mini Statement
+</div>
+
+<div class="small-card">
+💵<br><br>
+Loans
+</div>
+
+<div class="small-card">
+🔒<br><br>
+Lock Savings
+</div>
+
+</div>
+
+<button
+class="limit-btn"
+onclick="window.location.href='increase-limit.html'">
+🚀 Increase Your M-SHWARI Loan Limit
+</button>
+
+<div class="footer"></div>
+
+</div>
+</body>
+</html>

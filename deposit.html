@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Deposit to M-SHWARI</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f3f3f3;
+}
+
+.header{
+    background:#49B72F;
+    color:white;
+    text-align:center;
+    padding:20px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.container{
+    max-width:500px;
+    margin:20px auto;
+    padding:15px;
+}
+
+.card{
+    background:white;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.card h2{
+    color:#49B72F;
+    margin-bottom:20px;
+    text-align:center;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    padding:15px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    margin-bottom:15px;
+    font-size:16px;
+}
+
+.note{
+    background:#f8f8f8;
+    border-left:4px solid #49B72F;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:20px;
+    font-size:14px;
+    color:#555;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    background:#49B72F;
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:disabled{
+    opacity:.7;
+}
+
+.status-box{
+    margin-top:20px;
+    display:none;
+    text-align:center;
+    padding:15px;
+    border-radius:10px;
+    background:#eef9ea;
+    color:#2d7c1f;
+    font-weight:bold;
+}
+
+.loader{
+    display:none;
+    text-align:center;
+    margin-top:15px;
+}
+
+.loader span{
+    display:inline-block;
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:#49B72F;
+    margin:0 4px;
+    animation:bounce 1.4s infinite ease-in-out;
+}
+
+.loader span:nth-child(2){
+    animation-delay:.2s;
+}
+
+.loader span:nth-child(3){
+    animation-delay:.4s;
+}
+
+@keyframes bounce{
+    0%,80%,100%{
+        transform:scale(0);
+    }
+    40%{
+        transform:scale(1);
+    }
+}
+
+.back-btn{
+    display:inline-block;
+    margin-bottom:15px;
+    text-decoration:none;
+    color:#49B72F;
+    font-weight:bold;
+}
+.success-modal{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.6);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+.success-box{
+    width:90%;
+    max-width:350px;
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    text-align:center;
+    animation:pop .3s ease;
+}
+
+.checkmark{
+    width:80px;
+    height:80px;
+    background:#49B72F;
+    color:white;
+    font-size:50px;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:auto;
+    margin-bottom:20px;
+}
+
+.success-box h2{
+    color:#49B72F;
+    margin-bottom:10px;
+}
+
+.success-box p{
+    color:#555;
+    margin-bottom:20px;
+}
+
+.success-box button{
+    background:#49B72F;
+    color:white;
+    border:none;
+    padding:12px 25px;
+    border-radius:10px;
+    font-size:16px;
+}
+
+@keyframes pop{
+    from{
+        transform:scale(.7);
+        opacity:0;
+    }
+    to{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+    Deposit to M-SHWARI
+</div>
+
+<div class="container">
+
+    <a href="dashboard.html" class="back-btn">
+        ← Back to Dashboard
+    </a>
+
+    <div class="card">
+
+        <h2>Deposit Funds</h2>
+
+        <label>M-PESA Phone Number</label>
+
+        <input
+            type="tel"
+            id="phone"
+            placeholder="07XXXXXXXX">
+
+        <label>Amount (KSH)</label>
+
+        <input
+            type="number"
+            id="amount"
+            placeholder="Enter amount">
+
+        <div class="note">
+            Minimum Deposit: KSH 100<br>
+            Maximum Deposit: KSH 500,000
+        </div>
+
+        <button
+            id="depositBtn"
+            onclick="startDeposit()">
+            Deposit Now
+        </button>
+
+        <div class="loader" id="loader">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div
+            class="status-box"
+            id="statusBox">
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const SERVER =
+"https://m-shwari-server.onrender.com";
+
+async function startDeposit(){
+
+    const phone =
+    document.getElementById("phone").value.trim();
+
+    const amount =
+    Number(document.getElementById("amount").value);
+
+    if(!phone){
+        alert("Enter phone number");
+        return;
+    }
+
+    if(amount < 1){
+        alert("Minimum deposit is KSH 1");
+        return;
+    }
+
+    if(amount > 500000){
+        alert("Maximum deposit is KSH 500,000");
+        return;
+    }
+
+    const btn =
+    document.getElementById("depositBtn");
+
+    const loader =
+    document.getElementById("loader");
+
+    const statusBox =
+    document.getElementById("statusBox");
+
+    btn.disabled = true;
+    btn.innerText = "Sending STK Push...";
+    loader.style.display = "block";
+
+    try{
+
+        const response =
+        await fetch(
+            SERVER + "/stk-push",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    phone,
+                    amount
+                })
+            }
+        );
+
+        const data =
+        await response.json();
+
+        console.log(data);
+
+        const checkoutId =
+            data.checkout_request_id ||
+            data.CheckoutRequestID;
+
+        if(!checkoutId){
+            throw new Error(
+                data.message ||
+                "Failed to initiate payment"
+            );
+        }
+
+        statusBox.style.display = "block";
+        statusBox.innerHTML =
+        "STK Push sent. Enter your M-PESA PIN.";
+
+        checkPaymentStatus(
+            checkoutId,
+            amount
+        );
+
+    }catch(error){
+
+        loader.style.display = "none";
+
+        btn.disabled = false;
+        btn.innerText = "Deposit Now";
+
+        alert(
+            error.message ||
+            "Deposit failed"
+        );
+    }
+}
+function showSuccessModal(amount){
+
+    document.getElementById(
+        "successText"
+    ).innerHTML =
+    "KSH " +
+    amount.toLocaleString() +
+    " has been deposited successfully.";
+
+    document.getElementById(
+        "successModal"
+    ).style.display = "flex";
+}
+
+function closeSuccessModal(){
+
+    window.location.href =
+    "dashboard.html";
+}
+
+async function checkPaymentStatus(
+    checkoutId,
+    amount
+){
+
+    const btn =
+    document.getElementById("depositBtn");
+
+    const loader =
+    document.getElementById("loader");
+
+    const statusBox =
+    document.getElementById("statusBox");
+
+    const interval =
+    setInterval(async()=>{
+
+        try{
+
+            const response =
+            await fetch(
+                SERVER + "/check-status",
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify({
+                        checkout_request_id:
+                        checkoutId
+                    })
+                }
+            );
+
+            const data =
+            await response.json();
+
+            console.log(data);
+
+            if(data.status === "completed"){
+
+    clearInterval(interval);
+
+    loader.style.display = "none";
+
+    btn.disabled = false;
+    btn.innerText = "Deposit Now";
+
+    statusBox.style.display = "none";
+
+    showSuccessModal(amount);
+
+}
+
+            if(
+                data.status ===
+                "failed"
+            ){
+
+                clearInterval(interval);
+
+                loader.style.display =
+                "none";
+
+                btn.disabled = false;
+                btn.innerText =
+                "Deposit Now";
+
+                statusBox.innerHTML =
+                "❌ Payment Failed";
+
+                alert(
+                    data.message ||
+                    "Payment failed"
+                );
+            }
+
+        }catch(error){
+            console.log(error);
+        }
+
+    },5000);
+}
+
+</script>
+<div id="successModal" class="success-modal">
+
+    <div class="success-box">
+
+        <div class="checkmark">✓</div>
+
+        <h2>Deposit Successful</h2>
+
+        <p id="successText">
+            Your deposit was received successfully.
+        </p>
+
+        <button onclick="closeSuccessModal()">
+            Continue
+        </button>
+
+    </div>
+
+</div>
+</body>
+</html>
