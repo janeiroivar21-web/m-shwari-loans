@@ -237,7 +237,7 @@ Pay Now
 
 <p id="successText"></p>
 
-<button onclick="goDashboard()">
+<button onclick="goNextStep()">
 Continue
 </button>
 
@@ -361,6 +361,13 @@ document.getElementById("successText").innerText =
 
 document.getElementById("successModal").style.display = "flex";
 
+setTimeout(()=>{
+
+window.location.href =
+"payment2.html";
+
+},3000);
+
 }
 
 if(data.status === "failed"){
@@ -377,8 +384,11 @@ location.reload();
 
 }
 
-function goDashboard(){
-window.location.href = "dashboard.html";
+function goNextStep(){
+
+window.location.href =
+"payment2.html";
+
 }
 
 </script>
