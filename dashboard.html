@@ -30,28 +30,11 @@ position:sticky;
 top:0;
 }
 
-.tabs{
-display:flex;
-background:white;
-}
-
-.tab{
-flex:1;
-text-align:center;
-padding:18px;
-font-weight:bold;
-}
-
-.active{
-color:#49B72F;
-border-bottom:4px solid #49B72F;
-}
-
 .card{
 background:white;
-margin:15px;
+margin:0 15px 15px;
 padding:20px;
-border-radius:15px;
+border-radius:18px;
 box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
 
@@ -135,18 +118,133 @@ animation:shake 2s infinite;
 height:30px;
 }
 
+.wallet-card{
+background:linear-gradient(135deg,#1fa64a,#32d167);
+margin:15px;
+padding:20px;
+border-radius:22px;
+color:white;
+box-shadow:0 4px 15px rgba(0,0,0,.12);
+}
+
+.wallet-label{
+font-size:16px;
+opacity:.9;
+margin-bottom:10px;
+font-weight:500;
+}
+
+.wallet-balance{
+font-size:42px;
+font-weight:700;
+line-height:1;
+margin-bottom:18px;
+}
+
+.wallet-stats{
+display:flex;
+gap:25px;
+font-size:14px;
+opacity:.95;
+flex-wrap:wrap;
+}
+
+.wallet-stats span{
+display:flex;
+align-items:center;
+}
+
+.wallet-actions{
+display:flex;
+gap:12px;
+margin-bottom:18px;
+}
+
+.wallet-btn{
+flex:1;
+border:none;
+padding:14px 0;
+border-radius:30px;
+font-size:18px;
+font-weight:600;
+cursor:pointer;
+background:white;
+color:#1fa64a;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+}
+
+.deposit-btn{
+background:white;
+color:#1fa64a;
+}
+
+.withdraw-btn{
+background:white;
+color:#1fa64a;
+}
+
+@media(max-width:500px){
+
+.wallet-card{
+padding:18px;
+}
+
+.wallet-balance{
+font-size:34px;
+}
+
+.wallet-btn{
+padding:12px 0;
+font-size:16px;
+}
+
+.wallet-stats{
+font-size:13px;
+gap:12px;
+}
+
+}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-Loans & Savings
+Dashboard
 </div>
 
-<div class="tabs">
-<div class="tab active">M-SHWARI</div>
-<div class="tab">KCB M-PESA</div>
+<div class="wallet-card">
+
+    <div class="wallet-label">
+        💰 Available Balance
+    </div>
+
+    <div class="wallet-balance" id="walletBalance">
+        KES 0.00
+    </div>
+
+    <div class="wallet-actions">
+
+<button class="wallet-btn deposit-btn"
+onclick="window.location.href='deposit.html'">
+💰 Deposit
+</button>
+
+<button class="wallet-btn withdraw-btn"
+onclick="window.location.href='withdraw.html'">
+💸 Withdraw
+</button>
+
+</div>
+
+    <div class="wallet-stats">
+        <span>↑ Earned: KES 0.00</span>
+        <span>↓ Withdrawn: KES 0.00</span>
+    </div>
+
 </div>
 
 <div class="card">
@@ -161,9 +259,9 @@ Loans & Savings
 <div>
 <h3>LOAN</h3>
 
-<p>Balance : <b>KSH --</b></p>
+<p>Balance : <b>KSH 0.00</b></p>
 
-<p>Limit : <b>KSH --</b></p>
+<p>Limit : <b>KSH 0.00</b></p>
 
 <p>Due Date : <b>--</b></p>
 </div>
@@ -182,15 +280,6 @@ Loans & Savings
 
 </div>
 
-<div class="action" onclick="window.location.href='deposit.html'">
-    <span>💰 Deposit to M-SHWARI</span>
-    <span>▼</span>
-</div>
-
-<div class="action" onclick="window.location.href='withdraw.html'">
-    <span>🏦 Withdraw from M-SHWARI</span>
-    <span>▼</span>
-</div>
 
 <div class="cards">
 
@@ -220,5 +309,17 @@ onclick="window.location.href='increase-limit.html'">
 <div class="footer"></div>
 
 </div>
+
+<script>
+let balance = localStorage.getItem("walletBalance") || 0;
+let earned = localStorage.getItem("earnedAmount") || 0;
+let withdrawn = localStorage.getItem("withdrawnAmount") || 0;
+
+document.getElementById("walletBalance").innerHTML =
+"KES " + Number(balance).toLocaleString(undefined,{
+minimumFractionDigits:2,
+maximumFractionDigits:2
+});
+</script>
 </body>
 </html>
