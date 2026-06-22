@@ -289,7 +289,7 @@ async function startDeposit(){
     }
 
     if(amount > 500000){
-        alert("Maximum deposit is KSH 500,000");
+        showFailModal("Maximum deposit is KSH 500,000");
         return;
     }
 
