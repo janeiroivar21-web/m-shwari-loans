@@ -282,8 +282,8 @@ async function startDeposit(){
         return;
     }
 
-    if(amount < 100){
-        alert("Minimum deposit is KSH 100");
+    if(amount < 1){
+        alert("Minimum deposit is KSH 1");
         return;
     }
 
@@ -419,19 +419,27 @@ async function checkPaymentStatus(
 
             console.log(data);
 
-            if(data.status === "completed"){
+            if (data.status === "completed") {
 
     clearInterval(interval);
 
     loader.style.display = "none";
-
     btn.disabled = false;
     btn.innerText = "Deposit Now";
 
     statusBox.style.display = "none";
 
-    showSuccessModal(amount);
+    // ✅ ADD THIS: update dashboard balance
+    let currentBalance = Number(localStorage.getItem("walletBalance")) || 0;
+    let newBalance = currentBalance + amount;
 
+    localStorage.setItem("walletBalance", newBalance);
+
+    // optional tracking (earned)
+    let earned = Number(localStorage.getItem("earnedAmount")) || 0;
+    localStorage.setItem("earnedAmount", earned + amount);
+
+    showSuccessModal(amount);
 }
 
             if(
