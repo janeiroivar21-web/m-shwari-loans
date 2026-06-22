@@ -277,14 +277,15 @@ async function startDeposit(){
     const amount =
     Number(document.getElementById("amount").value);
 
-    if(!phone){
-        alert("Enter phone number");
-        return;
+    if (!phone) {
+    showFailModal("Please enter your M-PESA phone number");
+    return;
     }
 
-    if(amount < 50){
-        alert("Minimum deposit is KSH 50");
-        return;
+    if (amount < 50) {
+
+    showFailModal("Minimum deposit is KSH 50");
+    return;
     }
 
     if(amount > 500000){
