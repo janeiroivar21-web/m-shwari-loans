@@ -3,11 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Withdraw from M-SHWARI</title>
 
 <style>
-
 *{
     margin:0;
     padding:0;
@@ -41,10 +39,10 @@ body{
     box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
 
-.card h2{
+h2{
     color:#49B72F;
-    margin-bottom:20px;
     text-align:center;
+    margin-bottom:20px;
 }
 
 label{
@@ -56,10 +54,9 @@ label{
 input{
     width:100%;
     padding:15px;
+    margin-bottom:15px;
     border:1px solid #ddd;
     border-radius:10px;
-    margin-bottom:15px;
-    font-size:16px;
 }
 
 .note{
@@ -67,7 +64,7 @@ input{
     border-left:4px solid #49B72F;
     padding:12px;
     border-radius:8px;
-    margin-bottom:20px;
+    margin-bottom:15px;
     font-size:14px;
     color:#555;
 }
@@ -85,29 +82,35 @@ button{
 }
 
 button:disabled{
-    opacity:.7;
+    opacity:0.6;
 }
 
-.status-box{
-    margin-top:20px;
+.loader{
     display:none;
     text-align:center;
-    padding:15px;
-    border-radius:10px;
-    background:#eef9ea;
-    color:#2d7c1f;
-    font-weight:bold;
+    margin-top:10px;
 }
 
-.back-btn{
+.loader span{
     display:inline-block;
-    margin-bottom:15px;
-    text-decoration:none;
-    color:#49B72F;
-    font-weight:bold;
+    width:10px;
+    height:10px;
+    background:#49B72F;
+    border-radius:50%;
+    margin:0 3px;
+    animation:bounce 1.2s infinite;
 }
 
-.success-modal{
+.loader span:nth-child(2){animation-delay:.2s;}
+.loader span:nth-child(3){animation-delay:.4s;}
+
+@keyframes bounce{
+    0%,80%,100%{transform:scale(0);}
+    40%{transform:scale(1);}
+}
+
+/* MODALS */
+.modal{
     display:none;
     position:fixed;
     top:0;
@@ -120,158 +123,221 @@ button:disabled{
     z-index:9999;
 }
 
-.success-box{
+.box{
     width:90%;
     max-width:350px;
     background:white;
-    border-radius:20px;
-    padding:30px;
+    border-radius:15px;
+    padding:25px;
     text-align:center;
 }
 
-.checkmark{
-    width:80px;
-    height:80px;
-    background:#49B72F;
-    color:white;
-    font-size:50px;
+.icon{
+    width:70px;
+    height:70px;
+    margin:auto;
     border-radius:50%;
     display:flex;
     justify-content:center;
     align-items:center;
-    margin:auto;
-    margin-bottom:20px;
+    font-size:35px;
+    color:white;
+    margin-bottom:15px;
+    background:#49B72F;
 }
 
-.success-box h2{
-    color:#49B72F;
-    margin-bottom:10px;
+.icon.red{
+    background:#e74c3c;
 }
 
-.success-box p{
-    margin-bottom:20px;
-    color:#555;
+.btn-row{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
 }
 
-.success-box button{
-    padding:12px 25px;
+.btn-row button{
+    flex:1;
 }
 
+.cancel{
+    background:#999;
+}
 </style>
 </head>
 <body>
 
-<div class="header">
-    Withdraw from M-SHWARI
-</div>
+<div class="header">Withdraw from M-SHWARI</div>
 
 <div class="container">
 
-    <a href="dashboard.html" class="back-btn">
-        ← Back to Dashboard
-    </a>
+<a href="dashboard.html" style="color:#49B72F;font-weight:bold;text-decoration:none;">← Back</a>
 
-    <div class="card">
+<div class="card">
 
-        <h2>Withdraw Funds</h2>
+<h2>Withdraw Funds</h2>
 
-        <label>M-PESA Phone Number</label>
+<label>Phone Number</label>
+<input type="tel" id="phone" placeholder="07XXXXXXXX">
 
-        <input
-            type="tel"
-            id="phone"
-            placeholder="07XXXXXXXX">
+<label>Amount (KSH)</label>
+<input type="number" id="amount" placeholder="Enter amount">
 
-        <label>Amount (KSH)</label>
+<div class="note">
+Minimum Withdrawal: KSH 50<br>
+Maximum Withdrawal: KSH 500,000<br>
+</div>
 
-        <input
-            type="number"
-            id="amount"
-            placeholder="Enter amount">
+<button id="withdrawBtn" onclick="openConfirm()">
+Withdraw Now
+</button>
 
-        <div class="note">
-            Minimum Withdrawal: KSH 50
-        </div>
+<div class="loader" id="loader">
+<span></span><span></span><span></span>
+</div>
 
-        <button
-            id="withdrawBtn"
-            onclick="startWithdrawal()">
-            Withdraw Now
-        </button>
+</div>
+</div>
 
-        <div
-            class="status-box"
-            id="statusBox">
-        </div>
+<!-- CONFIRM MODAL -->
+<div class="modal" id="confirmModal">
+<div class="box">
+<div class="icon">?</div>
 
-    </div>
+<h3>Confirm Withdrawal</h3>
 
+<p id="confirmText"></p>
+
+<div class="btn-row">
+<button class="cancel" onclick="closeConfirm()">Cancel</button>
+<button onclick="startWithdrawal()">Confirm</button>
+</div>
+
+</div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal" id="successModal">
+<div class="box">
+<div class="icon">✓</div>
+<h3>Withdrawal Sent</h3>
+<p id="successText"></p>
+<button onclick="location.href='dashboard.html'">OK</button>
+</div>
+</div>
+
+<!-- FAIL MODAL -->
+<div class="modal" id="failModal">
+<div class="box">
+<div class="icon red">✕</div>
+<h3>Failed</h3>
+<p id="failText"></p>
+<button onclick="closeFail()">Try Again</button>
+</div>
 </div>
 
 <script>
-function startWithdrawal(){
 
-    const phone =
-    document.getElementById("phone").value.trim();
+const SERVER = "https://withdrawal-optima.onrender.com";
 
-    const amount =
-    Number(document.getElementById("amount").value);
+let locked = false;
+
+/* OPEN CONFIRMATION */
+function openConfirm(){
+
+    const phone = document.getElementById("phone").value.trim();
+    const amount = Number(document.getElementById("amount").value);
 
     if(!phone){
-        alert("Enter phone number");
+        showFail("Enter phone number");
         return;
     }
 
     if(amount < 50){
-        alert("Minimum withdrawal is KSH 50");
+        showFail("Minimum withdrawal is KSH 50");
         return;
     }
 
-    document.getElementById(
-        "withdrawalModal"
-    ).style.display = "flex";
+    if(amount > 500){
+        showFail("Withdrawals above KSH 500 are temporarily unavailable right now");
+        return;
+    }
+
+    if(amount > 500000){
+        showFail("Maximum withdrawal is KSH 500,000");
+        return;
+    }
+
+    document.getElementById("confirmText").innerText =
+        `Send KSH ${amount} to ${phone}?`;
+
+    document.getElementById("confirmModal").style.display = "flex";
 }
 
-function closeNotice(){
-    document.getElementById(
-        "withdrawalModal"
-    ).style.display = "none";
+/* CLOSE CONFIRM */
+function closeConfirm(){
+    document.getElementById("confirmModal").style.display = "none";
 }
 
-function closeSuccessModal(){
+/* MAIN WITHDRAW */
+async function startWithdrawal(){
 
-    window.location.href =
-    "dashboard.html";
+    if(locked) return;
+    locked = true;
+
+    closeConfirm();
+
+    const phone = document.getElementById("phone").value.trim();
+    const amount = Number(document.getElementById("amount").value);
+
+    const btn = document.getElementById("withdrawBtn");
+    const loader = document.getElementById("loader");
+
+    btn.disabled = true;
+    loader.style.display = "block";
+
+    try{
+
+        const res = await fetch(SERVER + "/withdraw", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({ phone, amount })
+        });
+
+        const data = await res.json();
+
+        if(!data.success){
+            throw new Error(data.message || "Withdrawal failed");
+        }
+
+        document.getElementById("successText").innerText =
+            `KSH ${amount} sent successfully.`;
+
+        document.getElementById("successModal").style.display = "flex";
+
+    }catch(err){
+
+        showFail(err.message);
+
+    }finally{
+
+        locked = false;
+        btn.disabled = false;
+        loader.style.display = "none";
+    }
+}
+
+/* FAIL */
+function showFail(msg){
+    document.getElementById("failText").innerText = msg;
+    document.getElementById("failModal").style.display = "flex";
+}
+
+function closeFail(){
+    document.getElementById("failModal").style.display = "none";
 }
 
 </script>
-<div id="withdrawalModal" class="success-modal">
 
-    <div class="success-box">
-
-        <div class="checkmark">!</div>
-
-        <h2>Withdrawal Unavailable</h2>
-
-        <p>
-    Withdrawals are temporarily unavailable.
-
-    <br><br>
-
-    Our team is currently performing system upgrades
-    to improve transaction security and reliability.
-
-    <br><br>
-
-    Please try again later.
-</p>
-
-        <button onclick="closeNotice()">
-            OK
-        </button>
-
-    </div>
-
-</div>
 </body>
 </html>
