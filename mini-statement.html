@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mini Statement</title>
+<style>
+body{font-family:Arial;background:#f3f3f3;padding:20px;}
+.card{background:white;padding:15px;border-radius:10px;margin-bottom:10px;}
+h2{color:#49B72F;}
+</style>
+</head>
+<body>
+
+<h2>Mini Statement</h2>
+
+<div id="list"></div>
+
+<script>
+let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+
+let list = document.getElementById("list");
+
+if(transactions.length === 0){
+    list.innerHTML = "No transactions yet.";
+}
+
+transactions.reverse().forEach(t => {
+    list.innerHTML += `
+        <div class="card">
+            <b>${t.type}</b><br>
+            KES ${t.amount}<br>
+            <small>${t.date}</small>
+        </div>
+    `;
+});
+</script>
+
+</body>
+</html>

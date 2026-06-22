@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loans - M-SHWARI</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:#f3f3f3;
+    padding:20px;
+}
+
+.header{
+    background:#49B72F;
+    color:white;
+    padding:15px;
+    border-radius:10px;
+    text-align:center;
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:8px;
+    border:1px solid #ddd;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    margin-top:15px;
+    background:#49B72F;
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.info{
+    background:#eef9ee;
+    padding:12px;
+    border-left:4px solid #49B72F;
+    border-radius:8px;
+    font-size:14px;
+    color:#2d6b2d;
+    margin-bottom:15px;
+}
+
+.bad{
+    background:#ffecec;
+    border-left:4px solid red;
+    color:#b30000;
+}
+
+.good{
+    background:#eef9ee;
+    border-left:4px solid #49B72F;
+    color:#2d6b2d;
+}
+
+.small{
+    font-size:13px;
+    opacity:0.8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+💵 M-SHWARI Loan Facility
+</div>
+
+<div class="card">
+
+<div class="info">
+✔ Loan range: KES 5,000 – 100,000<br>
+✔ Requirement: 20% wallet balance<br>
+✔ Interest: 5% only (flat)<br>
+✔ Instant approval for eligible users
+</div>
+
+<div class="info bad">
+⚠ Tip: Increase your wallet balance through deposits to unlock higher loan limits instantly.
+</div>
+
+<p><b>Your Wallet Balance:</b> KES <span id="wallet"></span></p>
+
+<input type="number" id="loanAmount" placeholder="Enter loan amount (5000 - 100000)">
+
+<button onclick="applyLoan()">Apply for Loan</button>
+
+<div class="card" id="resultBox" style="display:none;"></div>
+
+</div>
+
+<script>
+
+// load wallet
+let wallet = Number(localStorage.getItem("walletBalance")) || 0;
+document.getElementById("wallet").innerText = wallet.toLocaleString();
+
+function applyLoan(){
+
+    let amount = Number(document.getElementById("loanAmount").value);
+
+    let resultBox = document.getElementById("resultBox");
+    resultBox.style.display = "block";
+
+    if(amount < 5000 || amount > 100000){
+        resultBox.innerHTML = `
+            <div class="info bad">
+            ❌ Loan must be between KES 5,000 and KES 100,000
+            </div>`;
+        return;
+    }
+
+    let required = amount * 0.2;
+
+    if(wallet < required){
+        resultBox.innerHTML = `
+            <div class="info bad">
+            ❌ Loan Denied<br><br>
+            You need at least <b>KES ${required.toLocaleString()}</b> in your wallet (20% security requirement).<br><br>
+
+            👉 Keep saving or deposit more funds to unlock instant loan approval.
+            </div>`;
+        return;
+    }
+
+    let interest = amount * 0.05;
+    let totalRepay = amount + interest;
+
+    // approve loan
+    let currentLoan = Number(localStorage.getItem("loanBalance")) || 0;
+    localStorage.setItem("loanBalance", currentLoan + amount);
+
+    // add to wallet (loan disbursement)
+    localStorage.setItem("walletBalance", wallet + amount);
+
+    resultBox.innerHTML = `
+        <div class="info good">
+        ✅ Loan Approved Instantly!<br><br>
+
+        💰 Amount: KES ${amount.toLocaleString()}<br>
+        📊 Interest (5%): KES ${interest.toLocaleString()}<br>
+        💳 Total Repayment: KES ${totalRepay.toLocaleString()}<br><br>
+
+        🚀 Funds have been credited to your wallet.<br>
+        Keep using M-SHWARI to increase your loan limit automatically.
+        </div>
+    `;
+
+    // update wallet display
+    wallet = Number(localStorage.getItem("walletBalance"));
+    document.getElementById("wallet").innerText = wallet.toLocaleString();
+}
+
+</script>
+
+</body>
+</html>

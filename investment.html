@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investment - M-SHWARI</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:#f3f3f3;
+    padding:20px;
+}
+
+.header{
+    background:#49B72F;
+    color:white;
+    padding:15px;
+    border-radius:10px;
+    text-align:center;
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+input, select{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:8px;
+    border:1px solid #ddd;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    margin-top:15px;
+    background:#49B72F;
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.info{
+    background:#eef9ee;
+    padding:12px;
+    border-left:4px solid #49B72F;
+    border-radius:8px;
+    font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+📈 Investment Center
+</div>
+
+<div class="card">
+    <p><b>Wallet Balance:</b> <span id="wallet"></span></p>
+</div>
+
+<div class="card">
+
+    <div class="info">
+        💰 Fixed Return: <b>10%</b><br>
+        ⏱ Durations: 12H / 24H / 1W / 1M<br>
+        ⚠ Funds are locked until maturity
+    </div>
+
+    <input type="number" id="amount" placeholder="Enter investment amount">
+
+<!-- ✅ ADD THIS BLOCK HERE -->
+<div class="card">
+    <h3>Profit Preview</h3>
+
+    <p>Invested: <b id="previewAmount">KES 0</b></p>
+    <p>Profit (10%): <b id="previewProfit">KES 0</b></p>
+    <p>Total Return: <b id="previewTotal">KES 0</b></p>
+</div>
+<!-- END OF INSERT -->
+
+    <select id="duration">
+        <option value="43200000">12 Hours</option>
+        <option value="86400000">24 Hours</option>
+        <option value="604800000">1 Week</option>
+        <option value="2592000000">1 Month</option>
+    </select>
+
+    <button onclick="startInvestment()">Invest Now</button>
+
+    <p id="status"></p>
+</div>
+
+<script>
+
+function loadWallet(){
+    let wallet = Number(localStorage.getItem("walletBalance")) || 0;
+    document.getElementById("wallet").innerText =
+        "KES " + wallet.toLocaleString();
+}
+
+loadWallet();
+document.getElementById("amount").addEventListener("input", function () {
+
+    let amount = Number(this.value) || 0;
+
+    let profit = amount * 0.10;
+    let total = amount + profit;
+
+    document.getElementById("previewAmount").innerText =
+        "KES " + amount.toLocaleString();
+
+    document.getElementById("previewProfit").innerText =
+        "KES " + profit.toLocaleString();
+
+    document.getElementById("previewTotal").innerText =
+        "KES " + total.toLocaleString();
+});
+
+function startInvestment(){
+
+    let amount = Number(document.getElementById("amount").value);
+    let duration = Number(document.getElementById("duration").value);
+
+    let wallet = Number(localStorage.getItem("walletBalance")) || 0;
+
+    if(amount < 100){
+        alert("Minimum investment is KES 100");
+        return;
+    }
+
+    if(wallet < amount){
+        alert("Insufficient wallet balance");
+        return;
+    }
+
+    wallet -= amount;
+    localStorage.setItem("walletBalance", wallet);
+
+    let investment = {
+        amount: amount,
+        startTime: Date.now(),
+        duration: duration,
+        rate: 0.10,
+        matured: false
+    };
+
+    localStorage.setItem("investment", JSON.stringify(investment));
+
+    document.getElementById("status").innerText =
+        "Investment started successfully!";
+
+    loadWallet();
+}
+
+</script>
+
+</body>
+</html>
