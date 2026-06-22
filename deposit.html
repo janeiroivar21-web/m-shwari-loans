@@ -239,7 +239,7 @@ button:disabled{
             placeholder="Enter amount">
 
         <div class="note">
-            Minimum Deposit: KSH 100<br>
+            Minimum Deposit: KSH 50<br>
             Maximum Deposit: KSH 500,000
         </div>
 
@@ -282,8 +282,8 @@ async function startDeposit(){
         return;
     }
 
-    if(amount < 1){
-        alert("Minimum deposit is KSH 1");
+    if(amount < 50){
+        alert("Minimum deposit is KSH 50");
         return;
     }
 
@@ -343,23 +343,20 @@ async function startDeposit(){
         "STK Push sent. Enter your M-PESA PIN.";
 
         checkPaymentStatus(
-            checkoutId,
-            amount
-        );
+    checkoutId,
+    amount
+);
 
-    }catch(error){
+    } catch(error){
 
         loader.style.display = "none";
-
         btn.disabled = false;
         btn.innerText = "Deposit Now";
 
-        alert(
-            error.message ||
-            "Deposit failed"
-        );
+        showFailModal(error.message || "Payment failed. Please try again.");
     }
 }
+  
 function showSuccessModal(amount){
 
     document.getElementById(
@@ -438,32 +435,33 @@ async function checkPaymentStatus(
     // optional tracking (earned)
     let earned = Number(localStorage.getItem("earnedAmount")) || 0;
     localStorage.setItem("earnedAmount", earned + amount);
+     let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+
+transactions.push({
+    type: "Deposit",
+    amount: amount,
+    date: new Date().toLocaleString()
+});
+
+localStorage.setItem("transactions", JSON.stringify(transactions));
 
     showSuccessModal(amount);
 }
 
-            if(
-                data.status ===
-                "failed"
-            ){
+           if (data.status === "failed") {
 
-                clearInterval(interval);
+    clearInterval(interval);
 
-                loader.style.display =
-                "none";
+    loader.style.display = "none";
+    btn.disabled = false;
+    btn.innerText = "Deposit Now";
 
-                btn.disabled = false;
-                btn.innerText =
-                "Deposit Now";
+    statusBox.style.display = "none";
 
-                statusBox.innerHTML =
-                "❌ Payment Failed";
-
-                alert(
-                    data.message ||
-                    "Payment failed"
-                );
-            }
+    showFailModal(
+        data.message || "Payment failed. Please try again."
+    );
+} 
 
         }catch(error){
             console.log(error);
@@ -472,7 +470,19 @@ async function checkPaymentStatus(
     },5000);
 }
 
+function showFailModal(message){
+    document.getElementById("failText").innerText =
+        message || "Transaction failed. Please try again.";
+
+    document.getElementById("failModal").style.display = "flex";
+}
+
+function retryDeposit(){
+    document.getElementById("failModal").style.display = "none";
+}
+
 </script>
+<!-- SUCCESS MODAL -->
 <div id="successModal" class="success-modal">
 
     <div class="success-box">
@@ -481,12 +491,35 @@ async function checkPaymentStatus(
 
         <h2>Deposit Successful</h2>
 
-        <p id="successText">
-            Your deposit was received successfully.
-        </p>
+        <p id="successText"></p>
 
         <button onclick="closeSuccessModal()">
             Continue
+        </button>
+
+    </div>
+</div>
+
+
+<!-- FAIL MODAL (NEW FIXED VERSION) -->
+<div id="failModal" class="success-modal">
+
+    <div class="success-box">
+
+        <div class="checkmark" style="background:#e74c3c;">
+            ✕
+        </div>
+
+        <h2 style="color:#e74c3c;">
+            Payment Failed
+        </h2>
+
+        <p id="failText">
+            Transaction could not be completed.
+        </p>
+
+        <button onclick="retryDeposit()" style="background:#e74c3c;">
+            Try Again
         </button>
 
     </div>
