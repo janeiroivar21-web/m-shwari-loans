@@ -250,7 +250,7 @@ onclick="window.location.href='withdraw.html'">
 <div class="card">
 
 <div class="balance">
-<h2>SAVINGS</h2>
+<h2>TOTAL INVESTMENT</h2>
 <h2>KSH 0.00</h2>
 </div>
 
@@ -261,19 +261,21 @@ onclick="window.location.href='withdraw.html'">
 
 <p>Balance : <b>KSH 0.00</b></p>
 
-<p>Limit : <b>KSH 0.00</b></p>
+<p>Limit : <b id="loanLimit">KSH 0.00</b></p>
 
 <p>Due Date : <b>--</b></p>
 </div>
 
 <div>
-<h3>LOCK SAVINGS</h3>
+<h3>ACTIVE INVESTMENT</h3>
 
-<p>Savings : <b>KSH 0.00</b></p>
+<p>Amount : <b id="investmentAmount">KSH 0.00</b></p>
 
-<p>Target : <b>--</b></p>
+<p>Status : <b id="investStatus">No Active Investment</b></p>
 
-<p>Maturity Date : <b>--</b></p>
+<p>Profit (10%) : <b id="investProfit">KSH 0.00</b></p>
+
+<p>Time Left : <b id="timeLeft">--</b></p>
 </div>
 
 </div>
@@ -283,12 +285,12 @@ onclick="window.location.href='withdraw.html'">
 
 <div class="cards">
 
-<div class="small-card">
+<div class="small-card" onclick="window.location.href='mini-statement.html'">
 📄<br><br>
 Mini Statement
 </div>
 
-<div class="small-card">
+<div class="small-card" onclick="window.location.href='loans.html'">
 💵<br><br>
 Loans
 </div>
@@ -302,8 +304,8 @@ Lock Savings
 
 <button
 class="limit-btn"
-onclick="window.location.href='increase-limit.html'">
-🚀 Increase Your M-SHWARI Loan Limit
+onclick="window.location.href='investment.html'">
+📈 Invest Now
 </button>
 
 <div class="footer"></div>
@@ -311,15 +313,86 @@ onclick="window.location.href='increase-limit.html'">
 </div>
 
 <script>
-let balance = localStorage.getItem("walletBalance") || 0;
-let earned = localStorage.getItem("earnedAmount") || 0;
-let withdrawn = localStorage.getItem("withdrawnAmount") || 0;
+function updateDashboard(){
 
-document.getElementById("walletBalance").innerHTML =
-"KES " + Number(balance).toLocaleString(undefined,{
-minimumFractionDigits:2,
-maximumFractionDigits:2
-});
+    let wallet = Number(localStorage.getItem("walletBalance")) || 0;
+    let earned = Number(localStorage.getItem("earnedAmount")) || 0;
+    let withdrawn = Number(localStorage.getItem("withdrawnAmount")) || 0;
+    let investmentData = JSON.parse(localStorage.getItem("investment")) || null;
+
+    // ✅ LOAN LIMIT RULE (5x wallet)
+    let loanLimit = wallet * 5;
+  // ================= ACTIVE INVESTMENT =================
+if (investmentData && investmentData.amount) {
+
+    let now = Date.now();
+    let end = investmentData.startTime + investmentData.duration;
+
+    let profit = investmentData.amount * 0.10;
+
+    // Amount
+    document.getElementById("investmentAmount").innerHTML =
+        "KSH " + investmentData.amount.toLocaleString();
+
+    // Profit
+    document.getElementById("investProfit").innerHTML =
+        "KSH " + profit.toLocaleString();
+
+    // Status
+    document.getElementById("investStatus").innerHTML =
+        now >= end ? "Completed" : "Active";
+
+    // Time Left
+    if (now >= end) {
+        document.getElementById("timeLeft").innerHTML = "00:00:00";
+    } else {
+
+        let diff = end - now;
+
+        let h = Math.floor(diff / (1000 * 60 * 60));
+        let m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        let s = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById("timeLeft").innerHTML =
+            `${h}h ${m}m ${s}s`;
+    }
+
+} else {
+
+    document.getElementById("investmentAmount").innerHTML = "KSH 0.00";
+    document.getElementById("investProfit").innerHTML = "KSH 0.00";
+    document.getElementById("investStatus").innerHTML = "No Active Investment";
+    document.getElementById("timeLeft").innerHTML = "--";
+}
+
+    // wallet display
+    document.getElementById("walletBalance").innerHTML =
+        "KES " + wallet.toLocaleString(undefined,{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+    // update loan limit in savings card
+    document.getElementById("loanLimit").innerHTML =
+        "KSH " + loanLimit.toLocaleString(undefined,{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+    // update stats
+    document.querySelector(".wallet-stats span:first-child").innerHTML =
+        "↑ Earned: KES " + earned.toLocaleString();
+
+    document.querySelector(".wallet-stats span:last-child").innerHTML =
+        "↓ Withdrawn: KES " + withdrawn.toLocaleString();
+}
+
+// run on page load
+updateDashboard();
+
+// auto update if storage changes (other pages)
+window.addEventListener("storage", updateDashboard);
+setInterval(updateDashboard, 1000);
 </script>
 </body>
 </html>
