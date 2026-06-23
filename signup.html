@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account - M-SHWARI</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#4AB92F;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.card{
+background:white;
+width:92%;
+max-width:420px;
+padding:25px;
+border-radius:18px;
+box-shadow:0 10px 25px rgba(0,0,0,.25);
+}
+
+h2{
+text-align:center;
+color:#4AB92F;
+margin-bottom:15px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border:1px solid #ddd;
+border-radius:10px;
+outline:none;
+}
+
+.row{
+position:relative;
+}
+
+.eye{
+position:absolute;
+right:10px;
+top:50%;
+transform:translateY(-50%);
+cursor:pointer;
+font-size:13px;
+color:#4AB92F;
+}
+
+.status{
+font-size:12px;
+margin-top:-6px;
+margin-bottom:6px;
+}
+
+.ok{color:green;}
+.bad{color:red;}
+
+/* TERMS - bottom right corner */
+.terms-wrapper{
+display:flex;
+justify-content:flex-start;
+margin-top:10px;
+}
+
+.checkbox{
+display:flex;
+align-items:center;
+gap:6px;
+font-size:12px;
+color:#333;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#4AB92F;
+color:white;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-size:16px;
+opacity:0.6;
+margin-top:10px;
+}
+
+button.enabled{
+opacity:1;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>Create Account</h2>
+
+<input type="text" id="fullName" placeholder="Full Names">
+
+<input type="text" id="username" placeholder="Username">
+<div id="userStatus" class="status"></div>
+
+<input type="text" id="phone" placeholder="Phone Number (07XXXXXXXX)">
+<div id="phoneStatus" class="status"></div>
+
+<input type="email" id="email" placeholder="Email">
+
+<div class="row">
+<input type="password" id="password" placeholder="Password (min 6)">
+<span class="eye" onclick="toggle('password')">👁️</span>
+</div>
+<div id="passStatus" class="status"></div>
+
+<div class="row">
+<input type="password" id="confirmPassword" placeholder="Confirm Password">
+<span class="eye" onclick="toggle('confirmPassword')">👁️</span>
+</div>
+<div id="confirmStatus" class="status"></div>
+
+<!-- REFERRAL (RESTORED) -->
+<input type="text" id="referral" placeholder="Referral Code (Optional)">
+
+<!-- TERMS (BOTTOM RIGHT CORNER) -->
+<div class="terms-wrapper">
+<div class="checkbox">
+<input type="checkbox" id="terms">
+<label for="terms">I agree</label>
+</div>
+</div>
+
+<button id="btn" disabled>Create Account</button>
+
+<!-- LOGIN LINK -->
+<p style="text-align:center;margin-top:12px;font-size:13px;">
+  Already have an account?
+  <a href="login.html" style="color:#4AB92F;font-weight:bold;text-decoration:none;">
+    Login
+  </a>
+</p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCaoJm7m20S2wyvg_qv3nRS2mn3ndzGAwU",
+  authDomain: "m-shwari.firebaseapp.com",
+  projectId: "m-shwari",
+  storageBucket: "m-shwari.firebasestorage.app",
+  messagingSenderId: "679819480296",
+  appId: "1:679819480296:web:1c57331b9dd4aa7e320d5d"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let usernameOK=false, phoneOK=false, passOK=false, confirmOK=false;
+
+const btn=document.getElementById("btn");
+
+// 👁️ TOGGLE PASSWORD
+window.toggle=function(id){
+let i=document.getElementById(id);
+i.type=i.type==="password"?"text":"password";
+}
+
+// USERNAME CHECK
+document.getElementById("username").addEventListener("input",async(e)=>{
+let v=e.target.value.trim().toLowerCase();
+let s=document.getElementById("userStatus");
+
+if(v.length<3){
+s.innerHTML="Too short";
+s.className="status bad";
+usernameOK=false;
+check();
+return;
+}
+
+let q=query(collection(db,"users"),where("username","==",v));
+let snap=await getDocs(q);
+
+if(snap.empty){
+s.innerHTML="Available ✔";
+s.className="status ok";
+usernameOK=true;
+}else{
+s.innerHTML="Taken ✖";
+s.className="status bad";
+usernameOK=false;
+}
+
+check();
+});
+
+// PHONE CHECK
+document.getElementById("phone").addEventListener("input",(e)=>{
+let v=e.target.value;
+let s=document.getElementById("phoneStatus");
+
+if(/^07\d{8}$/.test(v)){
+s.innerHTML="Valid ✔";
+s.className="status ok";
+phoneOK=true;
+}else{
+s.innerHTML="Invalid";
+s.className="status bad";
+phoneOK=false;
+}
+
+check();
+});
+
+// PASSWORD
+document.getElementById("password").addEventListener("input",(e)=>{
+let v=e.target.value;
+let s=document.getElementById("passStatus");
+
+if(v.length>=6){
+s.innerHTML="Good ✔";
+s.className="status ok";
+passOK=true;
+}else{
+s.innerHTML="Min 6 chars";
+s.className="status bad";
+passOK=false;
+}
+
+check();
+});
+
+// CONFIRM
+document.getElementById("confirmPassword").addEventListener("input",(e)=>{
+let v=e.target.value;
+let p=document.getElementById("password").value;
+let s=document.getElementById("confirmStatus");
+
+if(v===p && v.length>0){
+s.innerHTML="Match ✔";
+s.className="status ok";
+confirmOK=true;
+}else{
+s.innerHTML="No match";
+s.className="status bad";
+confirmOK=false;
+}
+
+check();
+});
+
+// TERMS
+document.getElementById("terms").addEventListener("change",check);
+
+function check(){
+let t=document.getElementById("terms").checked;
+
+if(usernameOK && phoneOK && passOK && confirmOK && t){
+btn.disabled=false;
+btn.classList.add("enabled");
+}else{
+btn.disabled=true;
+btn.classList.remove("enabled");
+}
+}
+
+// SUBMIT
+btn.addEventListener("click",async()=>{
+
+let fullName=document.getElementById("fullName").value;
+let username=document.getElementById("username").value.trim().toLowerCase();
+let phone=document.getElementById("phone").value;
+let email=document.getElementById("email").value;
+let password=document.getElementById("password").value;
+let referral=document.getElementById("referral").value;
+
+if(!fullName.trim()){
+alert("Enter your full names");
+return;
+}
+
+if(!email.trim()){
+alert("Enter your email address");
+return;
+}
+
+try{
+
+btn.disabled = true;
+btn.textContent = "Creating Account...";
+
+const user=await createUserWithEmailAndPassword(auth,email,password);
+
+await setDoc(doc(db,"users",user.user.uid),{
+uid: user.user.uid,
+fullName,
+displayName: fullName,
+username,
+phone,
+email,
+referral: referral || "",
+wallet: 0,
+earned: 0,
+withdrawn: 0,
+investment: 0,
+loanLimit: 0,
+status: "active",
+role: "user",
+createdAt: Date.now(),
+lastLogin: null
+});
+
+alert("Account created!");
+window.location.href="dashboard.html";
+
+}catch(error){
+
+btn.disabled = false;
+btn.textContent = "Create Account";
+
+alert(error.message);
+
+}
+});
+</script>
+
+</body>
+</html>

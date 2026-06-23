@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - M-SHWARI</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#4AB92F;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.card{
+background:white;
+width:90%;
+max-width:370px;
+padding:25px;
+border-radius:18px;
+box-shadow:0 10px 25px rgba(0,0,0,.2);
+text-align:center;
+}
+
+h2{
+color:#4AB92F;
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:1px solid #ddd;
+border-radius:10px;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-size:12px;
+margin:5px 0 10px;
+color:#555;
+}
+
+.checkbox{
+display:flex;
+align-items:center;
+gap:5px;
+}
+
+a{
+color:#4AB92F;
+text-decoration:none;
+cursor:pointer;
+font-size:12px;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#4AB92F;
+color:white;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-size:16px;
+margin-top:10px;
+}
+
+button:hover{
+background:#3aa325;
+}
+
+.pass-box{
+position:relative;
+}
+
+.pass-box input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:1px solid #ddd;
+border-radius:10px;
+}
+
+.eye{
+position:absolute;
+right:12px;
+top:50%;
+transform:translateY(-50%);
+cursor:pointer;
+font-size:14px;
+color:#4AB92F;
+user-select:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>Login</h2>
+
+<input type="text" id="identifier" placeholder="Email or Username">
+
+<div class="pass-box">
+  <input type="password" id="password" placeholder="Password">
+  <span onclick="togglePassword()" class="eye">👁️</span>
+</div>
+
+<div class="row">
+<label class="checkbox">
+<input type="checkbox" id="remember">
+Remember me
+</label>
+
+<a onclick="forgotPassword()">Forgot Password?</a>
+</div>
+
+<button id="loginBtn" onclick="login()">Login</button>
+
+<!-- SIGNUP LINK -->
+<p style="text-align:center;margin-top:12px;font-size:13px;color:#555;">
+  Don't have an account?
+  <a href="signup.html" style="color:#4AB92F;font-weight:bold;text-decoration:none;">
+    Create account
+  </a>
+</p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import {
+getAuth,
+signInWithEmailAndPassword,
+setPersistence,
+browserLocalPersistence,
+browserSessionPersistence,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import {
+getFirestore,
+collection,
+query,
+where,
+getDocs,
+doc,
+updateDoc
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCaoJm7m20S2wyvg_qv3nRS2mn3ndzGAwU",
+  authDomain: "m-shwari.firebaseapp.com",
+  projectId: "m-shwari",
+  storageBucket: "m-shwari.firebasestorage.app",
+  messagingSenderId: "679819480296",
+  appId: "1:679819480296:web:1c57331b9dd4aa7e320d5d"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+onAuthStateChanged(auth,(user)=>{
+if(user){
+window.location.href="dashboard.html";
+}
+});
+const db = getFirestore(app);
+
+
+
+// 👁️ TOGGLE PASSWORD (MUST BE OUTSIDE login function)
+window.togglePassword = function () {
+let pass = document.getElementById("password");
+pass.type = pass.type === "password" ? "text" : "password";
+};
+
+
+
+// 🔐 LOGIN
+window.login = async function(){
+
+let identifier = document.getElementById("identifier").value.trim().toLowerCase();
+let password = document.getElementById("password").value;
+let remember = document.getElementById("remember").checked;
+
+if(!identifier || !password){
+alert("Fill all fields");
+return;
+}
+
+// 🔥 REMEMBER ME CONTROL
+if(remember){
+await setPersistence(auth, browserLocalPersistence);
+}else{
+await setPersistence(auth, browserSessionPersistence);
+}
+
+try {
+let loginBtn = document.getElementById("loginBtn");
+
+loginBtn.disabled = true;
+loginBtn.textContent = "Logging in...";
+let email = "";
+
+// EMAIL LOGIN
+if(identifier.includes("@")){
+email = identifier;
+}
+
+// USERNAME LOGIN
+else{
+const q = query(collection(db,"users"), where("username","==",identifier));
+const snap = await getDocs(q);
+
+if(snap.empty){
+
+loginBtn.disabled = false;
+loginBtn.textContent = "Login";
+
+alert("User not found");
+return;
+
+}
+
+snap.forEach(doc=>{
+email = doc.data().email;
+});
+}
+
+const userCredential =
+await signInWithEmailAndPassword(auth,email,password);
+
+await updateDoc(
+doc(db,"users",userCredential.user.uid),
+{
+lastLogin: Date.now()
+}
+);
+
+window.location.href="dashboard.html";
+
+} catch(err){
+loginBtn.disabled = false;
+loginBtn.textContent = "Login";
+
+alert("Login failed: " + err.message);
+}
+
+}
+
+
+
+// 🔥 FORGOT PASSWORD → WHATSAPP ADMIN
+window.forgotPassword = function(){
+
+let number = "2547XXXXXXXX"; // CHANGE THIS
+let message = "Hello Admin, I forgot my M-SHWARI password. Please assist me.";
+
+let url = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+
+window.open(url, "_blank");
+}
+</script>
+
+</body>
+</html>

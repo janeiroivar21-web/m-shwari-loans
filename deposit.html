@@ -267,7 +267,7 @@ button:disabled{
 <script>
 
 const SERVER =
-"https://withdrawal-optima.onrender.com";
+"https://m-shwari-server.onrender.com";
 
 async function startDeposit(){
 
@@ -280,12 +280,13 @@ async function startDeposit(){
     if (!phone) {
     showFailModal("Please enter your M-PESA phone number");
     return;
-    }
+}
 
     if (amount < 50) {
 
     showFailModal("Minimum deposit is KSH 50");
     return;
+      
     }
 
     if(amount > 500000){

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Refer & Earn - M-SHWARI</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f3f3f3;
+}
+
+.header{
+    background:#49B72F;
+    color:white;
+    padding:20px;
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.container{
+    max-width:500px;
+    margin:20px auto;
+    padding:15px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.back-btn{
+    display:inline-block;
+    margin-bottom:15px;
+    color:#49B72F;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.ref-code{
+    background:#eef9ea;
+    border:2px dashed #49B72F;
+    padding:15px;
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    color:#49B72F;
+    border-radius:12px;
+    margin:15px 0;
+}
+
+.info{
+    background:#f8f8f8;
+    border-left:4px solid #49B72F;
+    padding:12px;
+    border-radius:8px;
+    margin-top:10px;
+    font-size:14px;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    background:#49B72F;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:15px;
+}
+
+.stats{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.stat{
+    flex:1;
+    background:#eef9ea;
+    padding:15px;
+    border-radius:12px;
+    text-align:center;
+}
+
+.stat h3{
+    color:#49B72F;
+    margin-bottom:5px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+🎁 Refer & Earn
+</div>
+
+<div class="container">
+
+<a href="dashboard.html" class="back-btn">
+← Back to Dashboard
+</a>
+
+<div class="card">
+
+<h2>Invite Friends & Earn</h2>
+
+<p>
+Share your referral code with friends.
+When they join M-SHWARI and start using their account,
+you earn rewards instantly.
+</p>
+
+<div class="ref-code" id="refCode">
+Loading...
+</div>
+
+<div class="info">
+🔗 Share this referral link with friends to earn rewards.
+</div>
+
+<button onclick="copyCode()">
+Copy Referral Code
+</button>
+
+<button onclick="shareReferral()">
+📤 Share Referral Link
+</button>
+
+<div class="info">
+💰 Earn KES 50 for every successful referral.
+</div>
+
+<div class="info">
+🚀 The more friends you invite, the more rewards you earn.
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Your Referral Stats</h2>
+
+<div class="stats">
+
+<div class="stat">
+<h3 id="referrals">0</h3>
+<p>Referrals</p>
+</div>
+
+<div class="stat">
+<h3 id="earnings">0</h3>
+<p>Earnings</p>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+// Generate unique referral code once
+if(!localStorage.getItem("referralCode")){
+
+    const code =
+    "MSH" +
+    Math.random().toString(36)
+    .substring(2,8)
+    .toUpperCase();
+
+    localStorage.setItem(
+        "referralCode",
+        code
+    );
+}
+
+const referralCode =
+localStorage.getItem("referralCode");
+
+const referralLink =
+"https://m-shwari.co.ke/signup.html?ref=" +
+referralCode;
+
+// Display referral link
+document.getElementById("refCode").innerHTML =
+referralLink;
+
+// Load stats
+document.getElementById("referrals").innerText =
+localStorage.getItem("totalReferrals") || 0;
+
+document.getElementById("earnings").innerText =
+(localStorage.getItem("referralEarnings") || 0);
+
+function copyCode(){
+
+    navigator.clipboard.writeText(referralLink);
+
+    alert("Referral link copied successfully!");
+}
+
+async function shareReferral(){
+
+    const message =
+`Join M-SHWARI today and start saving, borrowing and earning rewards.
+
+Use my referral link:
+${referralLink}`;
+
+    if(navigator.share){
+
+        try{
+            await navigator.share({
+                title:"M-SHWARI Referral",
+                text:message
+            });
+        }catch(err){}
+    }else{
+
+        navigator.clipboard.writeText(message);
+
+        alert("Referral message copied successfully!");
+    }
+}
+
+</script>
+
+</body>
+</html>
