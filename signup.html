@@ -179,7 +179,7 @@ document.getElementById("username").addEventListener("input",async(e)=>{
 let v=e.target.value.trim().toLowerCase();
 let s=document.getElementById("userStatus");
 
-if(v.length<1){
+if(v.length<3){
 s.innerHTML="Too short";
 s.className="status bad";
 usernameOK=false;
