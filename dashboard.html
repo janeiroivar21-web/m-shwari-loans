@@ -372,37 +372,25 @@ Never share your M-PESA PIN, passwords, or verification codes with anyone. M-SHW
 <!-- ABOUT M-SHWARI SECTION END -->
 
 <div class="footer"></div>
-
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { auth, db } from "./firebase.js";
+
 import {
-getAuth,
 onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  getFirestore,
-  doc,
-  getDoc,
-  onSnapshot
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyCaoJm7m20S2wyvg_qv3nRS2mn3ndzGAwU",
-  authDomain: "m-shwari.firebaseapp.com",
-  projectId: "m-shwari",
-  storageBucket: "m-shwari.firebasestorage.app",
-  messagingSenderId: "679819480296",
-  appId: "1:679819480296:web:1c57331b9dd4aa7e320d5d"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+doc,
+onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 document.getElementById("walletBalance").innerHTML = "Loading...";
-async function loadDashboard(userId){
+
+// 🔥 LOAD DASHBOARD DATA
+function loadDashboard(userId){
 
 const ref = doc(db,"users",userId);
+
 onSnapshot(ref, (snap) => {
 
 if(!snap.exists()){
@@ -412,32 +400,30 @@ return;
 
 const data = snap.data();
 
-// ================= WALLET =================
+// WALLET
 let wallet = data.wallet || 0;
 let earned = data.earned || 0;
 let withdrawn = data.withdrawn || 0;
 
-// ================= LOAN =================
+// LOAN
 let loanLimit = wallet * 5;
 
-// ================= INVESTMENT =================
+// INVESTMENT
 let investmentData = data.investment ?? null;
 
-// wallet display
+// UI UPDATE
 document.getElementById("walletBalance").innerHTML =
 "KES " + wallet.toLocaleString(undefined,{
 minimumFractionDigits:2,
 maximumFractionDigits:2
 });
 
-// loan limit
 document.getElementById("loanLimit").innerHTML =
 "KSH " + loanLimit.toLocaleString(undefined,{
 minimumFractionDigits:2,
 maximumFractionDigits:2
 });
 
-// stats
 document.querySelector(".wallet-stats span:first-child").innerHTML =
 "↑ Earned: KES " + earned.toLocaleString();
 
@@ -445,7 +431,7 @@ document.querySelector(".wallet-stats span:last-child").innerHTML =
 "↓ Withdrawn: KES " + withdrawn.toLocaleString();
 
 
-// ================= INVESTMENT UI =================
+// INVESTMENT
 if(investmentData && investmentData.amount){
 
 let now = Date.now();
@@ -483,9 +469,11 @@ document.getElementById("investProfit").innerHTML = "KSH 0.00";
 document.getElementById("investStatus").innerHTML = "No Active Investment";
 document.getElementById("timeLeft").innerHTML = "--";
 }
+
 });
-}    
-// run on page load
+}
+
+// AUTH CHECK
 onAuthStateChanged(auth,(user)=>{
 if(user){
 loadDashboard(user.uid);
