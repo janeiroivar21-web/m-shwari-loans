@@ -315,11 +315,10 @@ return;
 
 const data = snap.data();
 
-const wallet =
-Number(data.wallet || 0);
+const wallet = Number(data.wallet || 0);
 
-qualifiedLoan =
-Math.min(wallet * 5,100000);
+// ✅ USE SAVED LOAN FROM LOANS PAGE
+qualifiedLoan = Number(data.qualifiedLoan || 0);
 
 if(qualifiedLoan < 5000){
 
@@ -456,8 +455,11 @@ qualifiedLoan,
 loanRepayment:
 totalRepayment,
 
-loanStatus:
-"Pending"
+loanStatus: "Processing",
+qualifiedLoan: qualifiedLoan,
+loanRepayment: totalRepayment,
+securityDeposit: securityFee,
+loanUpdatedAt: new Date().toISOString()
 }
 );
 
@@ -533,4 +535,4 @@ loader.style.display = "none";
 </script>
 
 </body>
-  </html>
+</html>
