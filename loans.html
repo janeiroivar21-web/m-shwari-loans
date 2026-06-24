@@ -216,7 +216,7 @@ window.applyLoan = async function(){
             document.getElementById("loanAmount").value
         );
 
-    if(amount < 5000 || amount > 1000000){
+    if(amount < 5000 || amount > 100000){
 
         document.getElementById("resultBox").style.display = "block";
 
@@ -254,7 +254,13 @@ window.applyLoan = async function(){
     }
 
     // Save qualified amount for payment pages
-    localStorage.setItem("approvedLoanAmount", amount);
+const userRef = doc(db, "users", user.uid);
+
+await updateDoc(userRef, {
+    qualifiedLoan: amount,
+    loanStatus: "Pending",
+    loanUpdatedAt: new Date().toISOString()
+});
 
     // Show congratulations popup
     document.getElementById("approvedAmount").innerText =
@@ -362,7 +368,7 @@ auth.onAuthStateChanged((user)=>{
     </div>
 
     <div class="info">
-        ⭐ Frequent deposits and responsible use of M-SHWARI help increase your loan limit from <b>KES 5,000 up to KES 1,000,000</b>.
+        ⭐ Frequent deposits and responsible use of M-SHWARI help increase your loan limit from <b>KES 5,000 up to KES 100,000</b>.
     </div>
 
     <div class="info good">
