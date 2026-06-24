@@ -282,7 +282,7 @@ onclick="window.location.href='withdraw.html'">
 
 <div class="balance">
 <h2>TOTAL INVESTMENT</h2>
-<h2>KSH 0.00</h2>
+<h2 id="totalInvestment">KSH 0.00</h2>
 </div>
 
 <div class="loan-grid">
@@ -304,7 +304,7 @@ onclick="window.location.href='withdraw.html'">
 
 <p>Status : <b id="investStatus">No Active Investment</b></p>
 
-<p>Profit (10%) : <b id="investProfit">KSH 0.00</b></p>
+<p>Expected Profit : <b id="investProfit">KSH 0.00</b></p>
 
 <p>Time Left : <b id="timeLeft">--</b></p>
 </div>
@@ -412,7 +412,8 @@ onAuthStateChanged
 
 import {
 doc,
-onSnapshot
+onSnapshot,
+updateDoc
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 document.getElementById("walletBalance").innerHTML = "Loading...";
@@ -442,7 +443,7 @@ const ref = doc(db,"users",userId);
 
 onSnapshot(ref,
 
-(snap)=>{
+async (snap)=>{
 
 console.log("DOCUMENT EXISTS:", snap.exists());
 
@@ -487,22 +488,45 @@ if(investmentData && investmentData.amount){
 
 let now = Date.now();
 let end = investmentData.startTime + investmentData.duration;
-let profit = investmentData.amount * 0.10;
+
+let profit =
+investmentData.amount *
+(investmentData.rate || 0.10);
 
 document.getElementById("investmentAmount").innerHTML =
+"KSH " + investmentData.amount.toLocaleString();
+
+document.getElementById("totalInvestment").innerHTML =
 "KSH " + investmentData.amount.toLocaleString();
 
 document.getElementById("investProfit").innerHTML =
 "KSH " + profit.toLocaleString();
 
-document.getElementById("investStatus").innerHTML =
-now >= end ? "Completed" : "Active";
-
 if(now >= end){
 
-document.getElementById("timeLeft").innerHTML = "00:00:00";
+document.getElementById("investStatus").innerHTML =
+"Completed";
+
+document.getElementById("timeLeft").innerHTML =
+"00:00:00";
+
+const totalReturn =
+investmentData.amount + profit;
+
+if(!investmentData.paid){
+
+await updateDoc(ref,{
+    wallet:(data.wallet || 0) + totalReturn,
+    earned:(data.earned || 0) + profit,
+    investment:null
+});
+
+}
 
 }else{
+
+document.getElementById("investStatus").innerHTML =
+"Active";
 
 let diff = end - now;
 
@@ -518,6 +542,8 @@ document.getElementById("timeLeft").innerHTML =
 }else{
 
 document.getElementById("investmentAmount").innerHTML = "KSH 0.00";
+document.getElementById("totalInvestment").innerHTML =
+"KSH 0.00";
 document.getElementById("investProfit").innerHTML = "KSH 0.00";
 document.getElementById("investStatus").innerHTML = "No Active Investment";
 document.getElementById("timeLeft").innerHTML = "--";
