@@ -226,6 +226,15 @@ onkeyup="filterUsers()">
 <div class="users-section">
 
 <h3 style="margin-bottom:15px;">
+<h3 style="margin-bottom:15px;color:#49B72F;">
+📌 Pending Loan Requests
+</h3>
+
+<div id="loanList" class="loading">
+Loading loans...
+</div>
+
+<h3 style="margin:15px 0;">
 Registered Users
 </h3>
 
@@ -279,6 +288,9 @@ async function loadUsers(){
 const usersList =
 document.getElementById("usersList");
 
+const loanList = document.getElementById("loanList");
+loanList.innerHTML = "";
+
 const snapshot =
 await getDocs(
 collection(db,"users")
@@ -288,24 +300,37 @@ allUsers = [];
 
 let totalDeposits = 0;
 let totalWithdrawals = 0;
+let pendingLoans = 0;
+let approvedLoans = 0;
+let rejectedLoans = 0;
 
-snapshot.forEach(docSnap=>{
+snapshot.forEach(docSnap => {
 
 const data = docSnap.data();
 
 allUsers.push({
-id:docSnap.id,
-...data
+    id: docSnap.id,
+    ...data
 });
 
-totalDeposits +=
-Number(data.earned || 0);
+const loan = Number(data.qualifiedLoan || 0);
+const status = data.loanStatus || "No Loan";
 
-totalWithdrawals +=
-Number(data.withdrawn || 0);
+if (loan > 0) {
+    if (status === "Pending") pendingLoans++;
+    else if (status === "Approved") approvedLoans++;
+    else if (status === "Rejected") rejectedLoans++;
+}
+
+totalDeposits += Number(data.earned || 0);
+totalWithdrawals += Number(data.withdrawn || 0);
 
 });
 
+document.getElementById("pendingLoans").innerText = pendingLoans;
+document.getElementById("approvedLoans").innerText = approvedLoans;
+document.getElementById("rejectedLoans").innerText = rejectedLoans;
+  
 document.getElementById(
 "totalUsers"
 ).innerText =
@@ -420,6 +445,63 @@ Delete
 `;
 
 });
+
+}
+loadLoans();
+async function loadLoans(){
+
+const loanList = document.getElementById("loanList");
+
+const snapshot = await getDocs(collection(db, "loanRequests"));
+
+loanList.innerHTML = "";
+
+let pending = 0;
+let approved = 0;
+let rejected = 0;
+
+snapshot.forEach(docSnap => {
+
+const data = docSnap.data();
+
+const status = data.status;
+const amount = data.amount;
+
+if(status === "Pending") pending++;
+if(status === "Approved") approved++;
+if(status === "Rejected") rejected++;
+
+loanList.innerHTML += `
+<div class="user-card">
+
+<h4>📞 ${data.phone}</h4>
+
+<p><b>Loan:</b> KES ${Number(amount).toLocaleString()}</p>
+
+<p><b>Status:</b> ${status}</p>
+
+<div class="action-row">
+
+<button class="action-btn add"
+onclick="approveLoan('${docSnap.id}')">
+Approve
+</button>
+
+<button class="action-btn deduct"
+onclick="rejectLoan('${docSnap.id}')">
+Reject
+</button>
+
+</div>
+
+</div>
+`;
+
+});
+
+document.getElementById("pendingLoans").innerText = pending;
+document.getElementById("approvedLoans").innerText = approved;
+document.getElementById("rejectedLoans").innerText = rejected;
 
 }
 
@@ -675,6 +757,70 @@ alert(error.message);
 }
 
 loadUsers();
+
+window.approveLoan = async function(loanId){
+
+try{
+
+const loanRef =
+doc(db,"loanRequests",loanId);
+
+const loanSnap =
+await getDoc(loanRef);
+
+if(!loanSnap.exists()){
+alert("Loan not found");
+return;
+}
+
+const loanData =
+loanSnap.data();
+
+if(loanData.status === "Approved"){
+alert("Already approved");
+return;
+}
+
+await updateDoc(
+doc(db,"users",loanData.userId),
+{
+wallet: increment(
+Number(loanData.amount)
+)
+}
+);
+
+await updateDoc(
+loanRef,
+{
+status:"Approved"
+}
+);
+
+alert("Loan approved and credited");
+
+loadLoans();
+loadUsers();
+
+}catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+window.rejectLoan = async function(loanId){
+
+await updateDoc(doc(db,"loanRequests",loanId),{
+status:"Rejected"
+});
+
+alert("Loan Rejected");
+
+loadLoans();
+
+}
 
 </script>
 
