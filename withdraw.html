@@ -236,7 +236,17 @@ Withdraw Now
 </div>
 </div>
 
-<script>
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+
+import {
+    doc,
+    getDoc,
+    updateDoc,
+    increment,
+    setDoc
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const SERVER = "https://withdrawal-optima.onrender.com";
 
@@ -260,11 +270,6 @@ function openConfirm(){
 
     if(amount > 500){
         showFail("Withdrawals above KSH 500 are temporarily unavailable right now");
-        return;
-    }
-
-    if(amount > 500000){
-        showFail("Maximum withdrawal is KSH 500,000");
         return;
     }
 
@@ -298,22 +303,86 @@ async function startWithdrawal(){
 
     try{
 
-        const res = await fetch(SERVER + "/withdraw", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({ phone, amount })
-        });
+        const user = auth.currentUser;
+
+        if(!user){
+            throw new Error("User not logged in");
+        }
+
+        const userRef = doc(db,"users",user.uid);
+
+        const snap = await getDoc(userRef);
+
+        if(!snap.exists()){
+            throw new Error("Account not found");
+        }
+
+        const userData = snap.data();
+
+        const wallet =
+            Number(userData.wallet || 0);
+
+        if(wallet < amount){
+            throw new Error(
+                "Insufficient wallet balance"
+            );
+        }
+
+        const res = await fetch(
+            SERVER + "/withdraw",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    phone,
+                    amount
+                })
+            }
+        );
 
         const data = await res.json();
 
         if(!data.success){
-            throw new Error(data.message || "Withdrawal failed");
+            throw new Error(
+                data.message ||
+                "Withdrawal failed"
+            );
         }
 
-        document.getElementById("successText").innerText =
-            `KSH ${amount} sent successfully.`;
+        await updateDoc(
+            userRef,
+            {
+                wallet: increment(-amount),
+                withdrawn: increment(amount)
+            }
+        );
 
-        document.getElementById("successModal").style.display = "flex";
+        let transactions =
+            JSON.parse(
+                localStorage.getItem("transactions")
+            ) || [];
+
+        transactions.push({
+            type:"Withdrawal",
+            amount:amount,
+            date:new Date().toLocaleString()
+        });
+
+        localStorage.setItem(
+            "transactions",
+            JSON.stringify(transactions)
+        );
+
+        document.getElementById(
+            "successText"
+        ).innerText =
+            `KSH ${amount.toLocaleString()} sent successfully.`;
+
+        document.getElementById(
+            "successModal"
+        ).style.display = "flex";
 
     }catch(err){
 
@@ -337,7 +406,11 @@ function closeFail(){
     document.getElementById("failModal").style.display = "none";
 }
 
-</script>
+window.openConfirm = openConfirm;
+window.closeConfirm = closeConfirm;
+window.startWithdrawal = startWithdrawal;
+window.closeFail = closeFail;
 
+</script>
 </body>
-</html>
+    </html>
