@@ -207,6 +207,37 @@ gap:12px;
 }
 
 }
+
+#toast{
+position:fixed;
+top:20px;
+left:50%;
+transform:translateX(-50%) translateY(-20px);
+background:#333;
+color:white;
+padding:14px 20px;
+border-radius:10px;
+font-size:14px;
+box-shadow:0 4px 12px rgba(0,0,0,.25);
+opacity:0;
+transition:.3s;
+z-index:9999;
+max-width:90%;
+text-align:center;
+}
+
+#toast.show{
+opacity:1;
+transform:translateX(-50%) translateY(0);
+}
+
+#toast.success{
+background:#28a745;
+}
+
+#toast.error{
+background:#dc3545;
+}
 </style>
 </head>
 
@@ -377,24 +408,46 @@ import { auth, db } from "./firebase.js";
 
 import {
 onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 import {
 doc,
 onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 document.getElementById("walletBalance").innerHTML = "Loading...";
+showToast("Loading dashboard...");
+function showToast(message,type="success"){
+
+const toast=document.getElementById("toast");
+
+toast.textContent=message;
+
+toast.className=
+type==="error"
+? "show error"
+: "show success";
+
+setTimeout(()=>{
+toast.className="";
+},3000);
+
+}
+console.log("Dashboard script loaded");
 
 // 🔥 LOAD DASHBOARD DATA
 function loadDashboard(userId){
 
 const ref = doc(db,"users",userId);
 
-onSnapshot(ref, (snap) => {
+onSnapshot(ref,
+
+(snap)=>{
+
+console.log("DOCUMENT EXISTS:", snap.exists());
 
 if(!snap.exists()){
-alert("User data not found");
+showToast("User data not found","error");
 return;
 }
 
@@ -430,13 +483,10 @@ document.querySelector(".wallet-stats span:first-child").innerHTML =
 document.querySelector(".wallet-stats span:last-child").innerHTML =
 "↓ Withdrawn: KES " + withdrawn.toLocaleString();
 
-
-// INVESTMENT
 if(investmentData && investmentData.amount){
 
 let now = Date.now();
 let end = investmentData.startTime + investmentData.duration;
-
 let profit = investmentData.amount * 0.10;
 
 document.getElementById("investmentAmount").innerHTML =
@@ -449,7 +499,9 @@ document.getElementById("investStatus").innerHTML =
 now >= end ? "Completed" : "Active";
 
 if(now >= end){
+
 document.getElementById("timeLeft").innerHTML = "00:00:00";
+
 }else{
 
 let diff = end - now;
@@ -460,6 +512,7 @@ let s = Math.floor((diff%(1000*60))/1000);
 
 document.getElementById("timeLeft").innerHTML =
 `${h}h ${m}m ${s}s`;
+
 }
 
 }else{
@@ -468,19 +521,41 @@ document.getElementById("investmentAmount").innerHTML = "KSH 0.00";
 document.getElementById("investProfit").innerHTML = "KSH 0.00";
 document.getElementById("investStatus").innerHTML = "No Active Investment";
 document.getElementById("timeLeft").innerHTML = "--";
+
 }
 
+},
+
+(error)=>{
+
+console.error("FIRESTORE ERROR:", error);
+showToast(error.message,"error");
+
 });
+
 }
 
 // AUTH CHECK
 onAuthStateChanged(auth,(user)=>{
+
+console.log("AUTH USER:", user);
+
 if(user){
+
+console.log("UID:", user.uid);
+
 loadDashboard(user.uid);
+
 }else{
+
+console.log("NO USER LOGGED IN");
+
 window.location.href="login.html";
+
 }
+
 });
 </script>
+<div id="toast"></div>
 </body>
 </html>
