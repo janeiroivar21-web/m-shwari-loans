@@ -94,6 +94,37 @@ margin-top:10px;
 button.enabled{
 opacity:1;
 }
+
+#toast{
+position:fixed;
+top:20px;
+left:50%;
+transform:translateX(-50%) translateY(-20px);
+background:#333;
+color:white;
+padding:14px 20px;
+border-radius:10px;
+font-size:14px;
+box-shadow:0 4px 12px rgba(0,0,0,.25);
+opacity:0;
+transition:.3s;
+z-index:9999;
+max-width:90%;
+text-align:center;
+}
+
+#toast.show{
+opacity:1;
+transform:translateX(-50%) translateY(0);
+}
+
+#toast.success{
+background:#28a745;
+}
+
+#toast.error{
+background:#dc3545;
+}
 </style>
 </head>
 
@@ -167,6 +198,20 @@ const db = getFirestore(app);
 let usernameOK=false, phoneOK=false, passOK=false, confirmOK=false;
 
 const btn=document.getElementById("btn");
+function showToast(message,type="success"){
+
+const toast=document.getElementById("toast");
+
+toast.textContent=message;
+toast.className=type==="error"
+? "show error"
+: "show success";
+
+setTimeout(()=>{
+toast.className="";
+},3000);
+
+}
 
 // 👁️ TOGGLE PASSWORD
 window.toggle=function(id){
@@ -288,12 +333,12 @@ let password=document.getElementById("password").value;
 let referral=document.getElementById("referral").value;
 
 if(!fullName.trim()){
-alert("Enter your full names");
+showToast("Enter your full names","error");
 return;
 }
 
 if(!email.trim()){
-alert("Enter your email address");
+showToast("Enter your email address","error");
 return;
 }
 
@@ -323,8 +368,11 @@ createdAt: Date.now(),
 lastLogin: null
 });
 
-alert("Account created!");
+showToast("Account created successfully!");
+
+setTimeout(()=>{
 window.location.href="dashboard.html";
+},1500);
 
 }catch(error){
 
@@ -333,14 +381,11 @@ btn.textContent = "Create Account";
 
 console.error("FULL ERROR:", error);
 
-alert(
-error.code + "\n\n" +
-error.message
-);
+showToast(error.message,"error");
 
 }
 });
 </script>
-
+<div id="toast"></div>
 </body>
-</html>
+  </html>
