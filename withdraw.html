@@ -377,10 +377,11 @@ console.log(
             ) || [];
 
         transactions.push({
-            type:"Withdrawal",
-            amount:amount,
-            date:new Date().toLocaleString()
-        });
+    type:"Withdrawal",
+    amount:amount,
+    status:"Completed",
+    date:new Date().toLocaleString()
+});
 
         localStorage.setItem(
             "transactions",
