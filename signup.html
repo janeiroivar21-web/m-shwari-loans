@@ -175,34 +175,38 @@ i.type=i.type==="password"?"text":"password";
 }
 
 // USERNAME CHECK
-document.getElementById("username").addEventListener("input",async(e)=>{
-let v=e.target.value.trim().toLowerCase();
+let usernameTimer;
+
+document.getElementById("username")
+.addEventListener("input",(e)=>{
+
+clearTimeout(usernameTimer);
+
+let v=e.target.value.trim();
+
 let s=document.getElementById("userStatus");
 
-if(v.length<3){
-s.innerHTML="Too short";
+usernameTimer=setTimeout(()=>{
+
+if(v.length < 3){
+
+s.innerHTML="Minimum 3 characters";
 s.className="status bad";
 usernameOK=false;
-check();
-return;
-}
 
-let q=query(collection(db,"users"),where("username","==",v));
-let snap=await getDocs(q);
+}else{
 
-if(snap.empty){
 s.innerHTML="Available ✔";
 s.className="status ok";
 usernameOK=true;
-}else{
-s.innerHTML="Taken ✖";
-s.className="status bad";
-usernameOK=false;
+
 }
 
 check();
-});
 
+},300);
+
+});
 // PHONE CHECK
 document.getElementById("phone").addEventListener("input",(e)=>{
 let v=e.target.value;
@@ -327,7 +331,12 @@ window.location.href="dashboard.html";
 btn.disabled = false;
 btn.textContent = "Create Account";
 
-alert(error.message);
+console.error("FULL ERROR:", error);
+
+alert(
+error.code + "\n\n" +
+error.message
+);
 
 }
 });
