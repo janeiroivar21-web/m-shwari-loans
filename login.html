@@ -264,18 +264,20 @@ alert(
 
 }
 
+}; // ← CLOSE login() FUNCTION HERE
 
 
 // 🔥 FORGOT PASSWORD → WHATSAPP ADMIN
 window.forgotPassword = function(){
 
-let number = "2547XXXXXXXX"; // CHANGE THIS
+let number = "2547XXXXXXXX";
 let message = "Hello Admin, I forgot my M-SHWARI password. Please assist me.";
 
 let url = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 
 window.open(url, "_blank");
-}
+
+}; // ← ADD THIS
 </script>
 
 </body>
