@@ -272,6 +272,7 @@ Try Again
 <script type="module">
 
 import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 import {
 doc,
@@ -307,28 +308,28 @@ return;
 const data =
 snap.data();
 
-qualifiedLoan =
-Number(data.qualifiedLoan || 0);
+qualifiedLoan = Number(
+    data.qualifiedLoan ??
+    data.loanAmount ??
+    0
+);
 
 document.getElementById(
 "qualifiedLoan"
 ).innerHTML =
 "KES " +
 qualifiedLoan.toLocaleString();
+  
+document.getElementById("amount").value = qualifiedLoan;
 
 }
 
-auth.onAuthStateChanged((user)=>{
+onAuthStateChanged(auth, (user) => {
 
-if(user){
-
-loadData();
-
-}else{
-
-location.href =
-"login.html";
-
+if (user) {
+    loadData();
+} else {
+    location.href = "login.html";
 }
 
 });
@@ -486,4 +487,4 @@ document.getElementById(
 </script>
 
 </body>
-  </html>
+</html>
