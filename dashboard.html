@@ -366,7 +366,7 @@ Your Financial Growth Partner
 
 <a href="support.html" onclick="closeMenu()">📞 Support</a>
 
-<a href="logout.html" onclick="closeMenu()">🚪 Logout</a>
+<a style="cursor:pointer;" onclick="logoutUser()">🚪 Logout</a>
 
 </div>
 
@@ -708,6 +708,23 @@ window.location.href="login.html";
 
 });
 
+import { signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+window.logoutUser = async function () {
+    try {
+        await signOut(auth);
+        showToast("Logged out successfully");
+
+        setTimeout(() => {
+            window.location.href = "login.html";
+        }, 1000);
+
+    } catch (error) {
+        console.error(error);
+        showToast("Logout failed", "error");
+    }
+}
+
 window.openMenu = function(){
 document.getElementById("sideMenu")
 .classList.add("active");
@@ -728,4 +745,4 @@ document.getElementById("overlay")
 <div id="toast"></div>
 
 </body>
-    </html>
+</html>
