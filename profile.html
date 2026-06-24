@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>My Profile - M-SHWARI</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f3f3f3;
+}
+
+.header{
+background:white;
+padding:18px;
+display:flex;
+align-items:center;
+gap:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.back-btn{
+font-size:24px;
+cursor:pointer;
+color:#49B72F;
+}
+
+.header h2{
+color:#49B72F;
+}
+
+.profile-card{
+background:white;
+margin:15px;
+padding:25px;
+border-radius:20px;
+text-align:center;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.avatar{
+width:90px;
+height:90px;
+background:#49B72F;
+color:white;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:40px;
+margin:auto;
+margin-bottom:15px;
+}
+
+.profile-card h3{
+margin-bottom:5px;
+}
+
+.profile-card p{
+color:#777;
+}
+
+.info-card{
+background:white;
+margin:15px;
+padding:20px;
+border-radius:18px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.info-row{
+display:flex;
+justify-content:space-between;
+padding:15px 0;
+border-bottom:1px solid #eee;
+}
+
+.info-row:last-child{
+border-bottom:none;
+}
+
+.label{
+font-weight:bold;
+color:#555;
+}
+
+.value{
+color:#333;
+}
+
+.wallet-card{
+background:linear-gradient(135deg,#1fa64a,#32d167);
+margin:15px;
+padding:20px;
+border-radius:20px;
+color:white;
+text-align:center;
+}
+
+.wallet-card h3{
+margin-bottom:10px;
+}
+
+.wallet-balance{
+font-size:35px;
+font-weight:bold;
+}
+
+.btn{
+width:90%;
+display:block;
+margin:15px auto;
+padding:15px;
+border:none;
+border-radius:12px;
+font-size:17px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.edit-btn{
+background:#49B72F;
+color:white;
+}
+
+.logout-btn{
+background:#dc3545;
+color:white;
+}
+
+#toast{
+position:fixed;
+top:20px;
+left:50%;
+transform:translateX(-50%);
+padding:12px 20px;
+background:#333;
+color:white;
+border-radius:10px;
+opacity:0;
+transition:.3s;
+z-index:9999;
+}
+
+#toast.show{
+opacity:1;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+<div class="back-btn"
+onclick="window.location.href='dashboard.html'">
+←
+</div>
+
+<h2>My Profile</h2>
+
+</div>
+
+<div class="profile-card">
+
+<div class="avatar">
+👤
+</div>
+
+<h3 id="fullName">Loading...</h3>
+
+<p id="username">@username</p>
+
+</div>
+
+<div class="wallet-card">
+
+<h3>Wallet Balance</h3>
+
+<div class="wallet-balance"
+id="walletBalance">
+KES 0.00
+</div>
+
+</div>
+
+<div class="info-card">
+
+<div class="info-row">
+<span class="label">Full Name</span>
+<span class="value" id="fullName2">-</span>
+</div>
+
+<div class="info-row">
+<span class="label">Username</span>
+<span class="value" id="username2">-</span>
+</div>
+
+<div class="info-row">
+<span class="label">Email</span>
+<span class="value" id="email">-</span>
+</div>
+
+<div class="info-row">
+<span class="label">Phone</span>
+<span class="value" id="phone">-</span>
+</div>
+
+<div class="info-row">
+<span class="label">Status</span>
+<span class="value" id="status">-</span>
+</div>
+
+<div class="info-row">
+<span class="label">Member Since</span>
+<span class="value" id="createdAt">-</span>
+</div>
+
+</div>
+
+<button class="btn edit-btn"
+onclick="window.location.href='settings.html'">
+✏️ Edit Profile
+</button>
+
+<button class="btn logout-btn"
+id="logoutBtn">
+🚪 Logout
+</button>
+
+<div id="toast"></div>
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+
+import {
+onAuthStateChanged,
+signOut
+}
+from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+import {
+doc,
+getDoc
+}
+from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+function showToast(message){
+
+const toast=document.getElementById("toast");
+
+toast.textContent=message;
+toast.classList.add("show");
+
+setTimeout(()=>{
+toast.classList.remove("show");
+},3000);
+
+}
+
+onAuthStateChanged(auth,async(user)=>{
+
+if(!user){
+
+window.location.href="login.html";
+return;
+
+}
+
+const ref=doc(db,"users",user.uid);
+
+const snap=await getDoc(ref);
+
+if(!snap.exists()) return;
+
+const data=snap.data();
+
+document.getElementById("fullName").innerHTML =
+data.fullName || "-";
+
+document.getElementById("fullName2").innerHTML =
+data.fullName || "-";
+
+document.getElementById("username").innerHTML =
+"@" + (data.username || "-");
+
+document.getElementById("username2").innerHTML =
+data.username || "-";
+
+document.getElementById("email").innerHTML =
+data.email || "-";
+
+document.getElementById("phone").innerHTML =
+data.phone || "-";
+
+document.getElementById("status").innerHTML =
+data.status || "Active";
+
+document.getElementById("walletBalance").innerHTML =
+"KES " + (data.wallet || 0).toLocaleString(undefined,{
+minimumFractionDigits:2
+});
+
+if(data.createdAt){
+
+let date=new Date(data.createdAt);
+
+document.getElementById("createdAt").innerHTML =
+date.toLocaleDateString();
+
+}
+
+});
+
+document.getElementById("logoutBtn")
+.addEventListener("click",async()=>{
+
+await signOut(auth);
+
+showToast("Logged out successfully");
+
+setTimeout(()=>{
+window.location.href="login.html";
+},1000);
+
+});
+
+</script>
+
+</body>
+</html>
