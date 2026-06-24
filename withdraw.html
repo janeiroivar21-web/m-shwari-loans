@@ -359,6 +359,18 @@ async function startWithdrawal(){
             }
         );
 
+         const updatedSnap = await getDoc(userRef);
+
+console.log(
+    "NEW WALLET:",
+    updatedSnap.data().wallet
+);
+
+console.log(
+    "NEW WITHDRAWN:",
+    updatedSnap.data().withdrawn
+);
+
         let transactions =
             JSON.parse(
                 localStorage.getItem("transactions")
@@ -413,4 +425,4 @@ window.closeFail = closeFail;
 
 </script>
 </body>
-    </html>
+</html>
