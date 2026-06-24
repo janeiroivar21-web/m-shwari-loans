@@ -20,14 +20,79 @@ background:#f3f3f3;
 }
 
 .header{
-background:#49B72F;
-color:white;
-padding:20px;
-text-align:center;
-font-size:22px;
-font-weight:bold;
-position:sticky;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:18px 15px;
+background:white;
+margin-bottom:10px;
+}
+
+.menu-btn,
+.bell-btn{
+font-size:28px;
+color:#49B72F;
+cursor:pointer;
+}
+
+.welcome{
+padding:0 15px 15px;
+background:white;
+}
+
+.welcome h2{
+color:#49B72F;
+font-size:30px;
+margin-bottom:5px;
+}
+
+.welcome p{
+color:#777;
+font-size:15px;
+}
+
+.side-menu{
+position:fixed;
 top:0;
+left:0;
+transform:translateX(-100%);
+width:280px;
+height:100%;
+background:white;
+box-shadow:2px 0 10px rgba(0,0,0,.2);
+padding:20px;
+overflow-y:auto;
+z-index:9999;
+transition:transform .3s ease;
+}
+
+.side-menu.active{
+transform:translateX(0);
+}
+
+.side-menu h3{
+color:#49B72F;
+margin-bottom:20px;
+}
+
+.side-menu a{
+display:block;
+padding:15px 10px;
+text-decoration:none;
+color:#333;
+border-bottom:1px solid #eee;
+font-size:16px;
+}
+
+.side-menu a:hover{
+background:#f5f5f5;
+}
+
+.close-btn{
+font-size:24px;
+cursor:pointer;
+float:right;
+color:#49B72F;
 }
 
 .card{
@@ -238,13 +303,71 @@ background:#28a745;
 #toast.error{
 background:#dc3545;
 }
+
+.overlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.3);
+display:none;
+z-index:9998;
+}
+
+.overlay.active{
+display:block;
+}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-Dashboard
+
+<div class="menu-btn" onclick="openMenu()">
+☰
+</div>
+
+<div class="bell-btn">
+🔔
+</div>
+
+</div>
+
+<div class="welcome">
+<h2>Welcome Back!</h2>
+<p id="userGreeting">Loading...</p>
+<small style="color:#888;">
+Your Financial Growth Partner
+</small>
+</div>
+<div id="overlay" class="overlay" onclick="closeMenu()"></div>
+  
+<div id="sideMenu" class="side-menu">
+
+<span class="close-btn" onclick="closeMenu()">✖</span>
+
+<h3>M-SHWARI Menu</h3>
+
+<a href="dashboard.html" onclick="closeMenu()">🏠 Dashboard</a>
+
+<a href="profile.html" onclick="closeMenu()">👤 Profile</a>
+
+<a href="investment.html" onclick="closeMenu()">📈 Investments</a>
+
+<a href="loans.html" onclick="closeMenu()">💵 Loans</a>
+
+<a href="mini-statement.html" onclick="closeMenu()">📄 Mini Statement</a>
+
+<a href="referral.html" onclick="closeMenu()">🎁 Refer & Earn</a>
+
+<a href="settings.html" onclick="closeMenu()">⚙️ Settings</a>
+
+<a href="support.html" onclick="closeMenu()">📞 Support</a>
+
+<a href="logout.html" onclick="closeMenu()">🚪 Logout</a>
+
 </div>
 
 <div class="wallet-card">
@@ -454,6 +577,9 @@ return;
 
 const data = snap.data();
 
+document.getElementById("userGreeting").innerHTML =
+data.fullName || "M-SHWARI Member";
+
 // WALLET
 let wallet = data.wallet || 0;
 let earned = data.earned || 0;
@@ -581,7 +707,25 @@ window.location.href="login.html";
 }
 
 });
+
+window.openMenu = function(){
+document.getElementById("sideMenu")
+.classList.add("active");
+
+document.getElementById("overlay")
+.classList.add("active");
+}
+
+window.closeMenu = function(){
+document.getElementById("sideMenu")
+.classList.remove("active");
+
+document.getElementById("overlay")
+.classList.remove("active");
+}
 </script>
+
 <div id="toast"></div>
+
 </body>
-</html>
+    </html>
