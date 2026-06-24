@@ -1,0 +1,136 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login - M-SHWARI</title><style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f3f3f3;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.card{
+background:white;
+padding:30px;
+width:90%;
+max-width:400px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+h2{
+text-align:center;
+color:#49B72F;
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:15px;
+margin-bottom:15px;
+border:1px solid #ddd;
+border-radius:10px;
+}
+
+button{
+width:100%;
+padding:15px;
+background:#49B72F;
+color:white;
+border:none;
+border-radius:10px;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+}
+
+#error{
+color:red;
+text-align:center;
+margin-top:10px;
+}
+</style></head><body><div class="card"><h2>Admin Login</h2><input type="text" id="username" placeholder="Username"><input type="password" id="password" placeholder="Password"><button onclick="loginAdmin()">Login</button>
+
+<p id="error"></p></div><script type="module">
+
+import { db } from "./firebase.js";
+
+import {
+doc,
+getDoc
+}
+from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+window.loginAdmin = async function(){
+
+const username =
+document.getElementById("username").value.trim();
+
+const password =
+document.getElementById("password").value;
+
+const error =
+document.getElementById("error");
+
+try{
+
+const adminRef =
+doc(db,"admins",username);
+
+const snap =
+await getDoc(adminRef);
+
+if(!snap.exists()){
+throw new Error("Admin not found");
+}
+
+const data = snap.data();
+
+console.log("Firestore Data:", data);
+console.log("Entered Username:", username);
+console.log("Entered Password:", password);
+
+if(data.password !== password){
+throw new Error(
+"Invalid password. Firestore password = " +
+data.password
+);
+}
+
+if(data.active !== true){
+throw new Error("Admin account disabled");
+}
+
+sessionStorage.setItem(
+"adminLoggedIn",
+"true"
+);
+
+sessionStorage.setItem(
+"adminUser",
+username
+);
+
+window.location.href =
+"admin-dashboard.html";
+
+}catch(err){
+
+error.innerText =
+err.message;
+
+}
+
+}
+
+</script></body>
+</html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>M-SHWARI Admin Dashboard</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f3f3f3;
+}
+
+.header{
+background:#49B72F;
+color:white;
+padding:20px;
+text-align:center;
+font-size:24px;
+font-weight:bold;
+position:sticky;
+top:0;
+z-index:1000;
+}
+
+.container{
+padding:15px;
+}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:15px;
+margin-bottom:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+text-align:center;
+}
+
+.card h3{
+font-size:14px;
+color:#666;
+margin-bottom:10px;
+}
+
+.card h2{
+color:#49B72F;
+}
+
+.search-box{
+background:white;
+padding:15px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+margin-bottom:20px;
+}
+
+.search-box input{
+width:100%;
+padding:15px;
+border:1px solid #ddd;
+border-radius:10px;
+font-size:16px;
+}
+
+.users-section{
+background:white;
+padding:15px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.user-card{
+border:1px solid #eee;
+padding:15px;
+border-radius:12px;
+margin-bottom:12px;
+}
+
+.user-card h4{
+color:#49B72F;
+margin-bottom:8px;
+}
+
+.user-card p{
+margin:4px 0;
+font-size:14px;
+}
+
+.action-row{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin-top:10px;
+}
+
+.action-btn{
+border:none;
+padding:8px 12px;
+border-radius:8px;
+cursor:pointer;
+color:white;
+font-size:13px;
+}
+
+.add{
+background:#28a745;
+}
+
+.deduct{
+background:#dc3545;
+}
+
+.lock{
+background:#ff9800;
+}
+
+.suspend{
+background:#6c757d;
+}
+
+.delete{
+background:#000;
+}
+
+.logout-btn{
+position:absolute;
+right:15px;
+top:15px;
+background:red;
+border:none;
+padding:10px 15px;
+color:white;
+border-radius:8px;
+cursor:pointer;
+}
+
+.loading{
+text-align:center;
+padding:20px;
+color:#666;
+}
+
+@media(max-width:600px){
+
+.stats{
+grid-template-columns:1fr;
+}
+
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+
+M-SHWARI ADMIN PANEL
+
+<button class="logout-btn"
+onclick="logoutAdmin()">
+Logout
+</button>
+
+</div>
+
+<div class="container">
+
+<div class="stats">
+
+<div class="card">
+<h3>Total Users</h3>
+<h2 id="totalUsers">0</h2>
+</div>
+
+<div class="card">
+<h3>Total Deposits</h3>
+<h2 id="totalDeposits">KES 0</h2>
+</div>
+
+<div class="card">
+<h3>Total Withdrawals</h3>
+<h2 id="totalWithdrawals">KES 0</h2>
+</div>
+
+<div class="card">
+<h3>Pending Loans</h3>
+<h2 id="pendingLoans">0</h2>
+</div>
+
+<div class="card">
+<h3>Approved Loans</h3>
+<h2 id="approvedLoans">0</h2>
+</div>
+
+<div class="card">
+<h3>Rejected Loans</h3>
+<h2 id="rejectedLoans">0</h2>
+</div>
+
+</div>
+
+<div class="search-box">
+
+<input
+type="text"
+id="searchInput"
+placeholder="Search user..."
+onkeyup="filterUsers()">
+
+</div>
+
+<div class="users-section">
+
+<h3 style="margin-bottom:15px;">
+Registered Users
+</h3>
+
+<div id="usersList" class="loading">
+Loading users...
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { db } from "./firebase.js";
+
+import {
+collection,
+getDocs
+}
+from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+/* ADMIN CHECK */
+
+if(
+sessionStorage.getItem("adminLoggedIn")
+!== "true"
+){
+
+window.location.href =
+"admin-login.html";
+
+}
+
+/* LOGOUT */
+
+window.logoutAdmin = function(){
+
+sessionStorage.clear();
+
+window.location.href =
+"admin-login.html";
+
+}
+
+let allUsers = [];
+
+/* LOAD USERS */
+
+async function loadUsers(){
+
+const usersList =
+document.getElementById("usersList");
+
+const snapshot =
+await getDocs(
+collection(db,"users")
+);
+
+allUsers = [];
+
+let totalDeposits = 0;
+let totalWithdrawals = 0;
+
+snapshot.forEach(docSnap=>{
+
+const data = docSnap.data();
+
+allUsers.push({
+id:docSnap.id,
+...data
+});
+
+totalDeposits +=
+Number(data.earned || 0);
+
+totalWithdrawals +=
+Number(data.withdrawn || 0);
+
+});
+
+document.getElementById(
+"totalUsers"
+).innerText =
+allUsers.length;
+
+document.getElementById(
+"totalDeposits"
+).innerText =
+"KES " +
+totalDeposits.toLocaleString();
+
+document.getElementById(
+"totalWithdrawals"
+).innerText =
+"KES " +
+totalWithdrawals.toLocaleString();
+
+renderUsers(allUsers);
+
+}
+
+/* RENDER USERS */
+
+function renderUsers(users){
+
+const usersList =
+document.getElementById("usersList");
+
+if(users.length === 0){
+
+usersList.innerHTML =
+"No users found";
+
+return;
+
+}
+
+usersList.innerHTML = "";
+
+users.forEach(user=>{
+
+usersList.innerHTML += `
+
+<div class="user-card">
+
+<h4>
+${user.name || user.email || user.uid}
+</h4>
+
+<p>
+Wallet:
+KES ${Number(
+user.wallet || 0
+).toLocaleString()}
+</p>
+
+<p>
+Earned:
+KES ${Number(
+user.earned || 0
+).toLocaleString()}
+</p>
+
+<p>
+Withdrawn:
+KES ${Number(
+user.withdrawn || 0
+).toLocaleString()}
+</p>
+
+<p>
+Status:
+${user.status || "active"}
+</p>
+
+<div class="action-row">
+
+<button
+class="action-btn add"
+onclick="addBalance('${user.id}')">
+Add Balance
+</button>
+
+<button
+class="action-btn deduct"
+onclick="deductBalance('${user.id}')">
+Deduct Balance
+</button>
+
+<button
+class="action-btn lock"
+onclick="toggleWithdrawal('${user.id}')">
+Lock Withdrawal
+</button>
+
+<button
+class="action-btn suspend"
+onclick="toggleUser('${user.id}')">
+Suspend
+</button>
+
+<button
+class="action-btn delete"
+onclick="deleteUser('${user.id}')">
+Delete
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+/* SEARCH */
+
+window.filterUsers = function(){
+
+const search =
+document.getElementById(
+"searchInput"
+).value.toLowerCase();
+
+const filtered =
+allUsers.filter(user=>{
+
+return (
+(user.name || "")
+.toLowerCase()
+.includes(search)
+
+||
+
+(user.email || "")
+.toLowerCase()
+.includes(search)
+
+||
+
+(user.uid || "")
+.toLowerCase()
+.includes(search)
+
+);
+
+});
+
+renderUsers(filtered);
+
+}
+
+/* PLACEHOLDERS FOR PART 2 */
+
+import {
+doc,
+updateDoc,
+increment,
+getDoc,
+deleteDoc
+}
+from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+/* ADD BALANCE */
+window.addBalance = async function(userId){
+
+const amount =
+Number(
+prompt("Enter amount to add:")
+);
+
+if(!amount || amount <= 0) return;
+
+try{
+
+await updateDoc(
+doc(db,"users",userId),
+{
+wallet: increment(amount)
+}
+);
+
+alert(
+"KES " +
+amount.toLocaleString() +
+" added successfully"
+);
+
+loadUsers();
+
+}catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+/* DEDUCT BALANCE */
+window.deductBalance = async function(userId){
+
+const amount =
+Number(
+prompt("Enter amount to deduct:")
+);
+
+if(!amount || amount <= 0) return;
+
+try{
+
+const userRef =
+doc(db,"users",userId);
+
+const snap =
+await getDoc(userRef);
+
+if(!snap.exists()){
+
+alert("User not found");
+return;
+
+}
+
+const wallet =
+Number(
+snap.data().wallet || 0
+);
+
+if(wallet < amount){
+
+alert("Insufficient user balance");
+return;
+
+}
+
+await updateDoc(
+userRef,
+{
+wallet: increment(-amount)
+}
+);
+
+alert(
+"KES " +
+amount.toLocaleString() +
+" deducted successfully"
+);
+
+loadUsers();
+
+}catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+/* LOCK / UNLOCK WITHDRAWALS */
+window.toggleWithdrawal = async function(userId){
+
+try{
+
+const userRef =
+doc(db,"users",userId);
+
+const snap =
+await getDoc(userRef);
+
+const current =
+snap.data().withdrawLocked || false;
+
+await updateDoc(
+userRef,
+{
+withdrawLocked: !current
+}
+);
+
+alert(
+current
+? "Withdrawals unlocked"
+: "Withdrawals locked"
+);
+
+loadUsers();
+
+}catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+/* SUSPEND / ACTIVATE USER */
+window.toggleUser = async function(userId){
+
+try{
+
+const userRef =
+doc(db,"users",userId);
+
+const snap =
+await getDoc(userRef);
+
+const current =
+snap.data().status || "active";
+
+const newStatus =
+current === "active"
+? "suspended"
+: "active";
+
+await updateDoc(
+userRef,
+{
+status:newStatus
+}
+);
+
+alert(
+"User is now " +
+newStatus
+);
+
+loadUsers();
+
+}catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+/* DELETE USER DOCUMENT */
+window.deleteUser = async function(userId){
+
+const confirmDelete =
+confirm(
+"Delete this user permanently?"
+);
+
+if(!confirmDelete) return;
+
+try{
+
+await deleteDoc(
+doc(db,"users",userId)
+);
+
+alert(
+"User deleted successfully"
+);
+
+loadUsers();
+
+}catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+loadUsers();
+
+</script>
+
+</body>
+</html>
