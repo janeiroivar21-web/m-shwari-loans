@@ -143,7 +143,7 @@ button{
 <div class="card">
 
 <div class="info">
-✔ Loan range: KES 5,000 – 100,000<br>
+✔ Loan range: KES 5,000 – 1,000,000<br>
 ✔ Requirement: 20% wallet balance<br>
 ✔ Interest: 5% only (flat)<br>
 ✔ Instant approval for eligible users
@@ -155,7 +155,7 @@ button{
 
 <p><b>Your Wallet Balance:</b> KES <span id="wallet"></span></p>
 
-<input type="number" id="loanAmount" placeholder="Enter loan amount (5000 - 100000)">
+<input type="number" id="loanAmount" placeholder="Enter loan amount (5000 - 1000000)">
 
 <button onclick="applyLoan()">Apply for Loan</button>
 
@@ -163,24 +163,68 @@ button{
 
 </div>
 
-<script>
+<script type="module">
 
-// load wallet
-let wallet = Number(localStorage.getItem("walletBalance")) || 0;
-document.getElementById("wallet").innerText = wallet.toLocaleString();
+import { auth, db } from "./firebase.js";
 
-function applyLoan(){
+import {
+doc,
+getDoc,
+updateDoc,
+increment
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-    let amount = Number(document.getElementById("loanAmount").value);
+let wallet = 0;
 
-    let resultBox = document.getElementById("resultBox");
-    resultBox.style.display = "block";
+// Load wallet from Firestore
+async function loadWallet(){
+
+    const user = auth.currentUser;
+
+    if(!user){
+        location.href = "login.html";
+        return;
+    }
+
+    const userRef = doc(db,"users",user.uid);
+
+    const snap = await getDoc(userRef);
+
+    if(!snap.exists()){
+        return;
+    }
+
+    const data = snap.data();
+
+    wallet = Number(data.wallet || 0);
+
+    document.getElementById("wallet").innerText =
+        wallet.toLocaleString();
+}
+
+window.applyLoan = async function(){
+
+    const user = auth.currentUser;
+
+    if(!user){
+        alert("Login required");
+        return;
+    }
+
+    let amount =
+        Number(
+            document.getElementById("loanAmount").value
+        );
 
     if(amount < 5000 || amount > 100000){
-        resultBox.innerHTML = `
-            <div class="info bad">
-            ❌ Loan must be between KES 5,000 and KES 100,000
-            </div>`;
+
+        document.getElementById("resultBox").style.display = "block";
+
+        document.getElementById("resultBox").innerHTML = `
+        <div class="info bad">
+        ❌ Loan must be between KES 5,000 and KES 1,000,000
+        </div>`;
+
         return;
     }
 
@@ -188,42 +232,38 @@ function applyLoan(){
 
     if(wallet < required){
 
-    showLoanModal(`
-        You need at least <b>KES ${required.toLocaleString()}</b> in your wallet (20% security requirement).<br><br>
+        showLoanModal(
+        `You need at least <b>KES ${required.toLocaleString()}</b>
+        in your wallet (20% security requirement).`
+        );
 
-        👉 Keep saving or deposit more funds to unlock instant loan approval.
-    `);
+        return;
+    }
 
-    return;
+    // Calculate loan limit
+    let loanLimit = wallet * 5;
+
+    if(amount > loanLimit){
+
+        showLoanModal(
+        `Your current loan limit is <b>KES ${loanLimit.toLocaleString()}</b>.<br><br>
+        Please enter an amount within your approved limit.`
+        );
+
+        return;
+    }
+
+    // Save qualified amount for payment pages
+    localStorage.setItem("approvedLoanAmount", amount);
+
+    // Show congratulations popup
+    document.getElementById("approvedAmount").innerText =
+        amount.toLocaleString();
+
+    document.getElementById("loanApprovedModal").style.display =
+        "flex";
 }
-
-    let interest = amount * 0.05;
-    let totalRepay = amount + interest;
-
-    // approve loan
-    let currentLoan = Number(localStorage.getItem("loanBalance")) || 0;
-    localStorage.setItem("loanBalance", currentLoan + amount);
-
-    // add to wallet (loan disbursement)
-    localStorage.setItem("walletBalance", wallet + amount);
-
-    resultBox.innerHTML = `
-        <div class="info good">
-        ✅ Loan Approved Instantly!<br><br>
-
-        💰 Amount: KES ${amount.toLocaleString()}<br>
-        📊 Interest (5%): KES ${interest.toLocaleString()}<br>
-        💳 Total Repayment: KES ${totalRepay.toLocaleString()}<br><br>
-
-        🚀 Funds have been credited to your wallet.<br>
-        Keep using M-SHWARI to increase your loan limit automatically.
-        </div>
-    `;
-
-    // update wallet display
-    wallet = Number(localStorage.getItem("walletBalance"));
-    document.getElementById("wallet").innerText = wallet.toLocaleString();
-}
+  
 function showLoanModal(message){
 
     document.getElementById(
@@ -235,14 +275,59 @@ function showLoanModal(message){
     ).style.display = "flex";
 }
 
-function closeLoanModal(){
+window.closeLoanModal = function(){
 
     document.getElementById(
         "loanDeniedModal"
     ).style.display = "none";
 }
+window.continueToPayment = function(){
+
+    window.location.href = "payment1.html";
+
+}
+
+auth.onAuthStateChanged((user)=>{
+
+    if(user){
+
+        loadWallet();
+
+    }else{
+
+        location.href = "login.html";
+
+    }
+
+});
 
 </script>
+<!-- LOAN APPROVED MODAL -->
+<div id="loanApprovedModal" class="loan-modal">
+
+    <div class="loan-modal-content"
+         style="background:#eef9ee;
+                border-left:6px solid #49B72F;
+                color:#2d6b2d;">
+
+        <h3>🎉 Congratulations!</h3>
+
+        <p>
+            You qualify for a loan of
+            <b>KES <span id="approvedAmount"></span></b>.
+            <br><br>
+            Continue to process your loan.
+        </p>
+
+        <button
+            style="background:#49B72F;"
+            onclick="continueToPayment()">
+            Continue
+        </button>
+
+    </div>
+
+</div>
 <div id="loanDeniedModal" class="loan-modal">
 
     <div class="loan-modal-content">
