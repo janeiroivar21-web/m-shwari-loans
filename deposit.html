@@ -271,7 +271,8 @@ import {
 doc,
 updateDoc,
 increment,
-setDoc
+setDoc,
+getDoc
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const SERVER =
@@ -366,6 +367,7 @@ async function startDeposit(){
         showFailModal(error.message || "Payment failed. Please try again.");
     }
 }
+  window.startDeposit = startDeposit;
   
 function showSuccessModal(amount){
 
@@ -446,23 +448,25 @@ if(!user){
 
 try{
 
+    const userRef = doc(db,"users",user.uid);
+
+    console.log("USER UID:", user.uid);
+    console.log("AMOUNT:", amount);
+
     await updateDoc(
-        doc(db,"users",user.uid),
+        userRef,
         {
             wallet: increment(amount),
             earned: increment(amount)
         }
     );
 
-    console.log("Added amount:", amount);
-    console.log("Updating document:", user.uid);
     console.log("Firestore updated successfully");
 
 }catch(error){
 
     console.error("Firestore update failed:", error);
 
-    // If document doesn't exist, create it
     await setDoc(
         doc(db,"users",user.uid),
         {
@@ -489,10 +493,11 @@ transactions.push({
 
 localStorage.setItem("transactions", JSON.stringify(transactions));
 
-    showSuccessModal(amount);
+showSuccessModal(amount);
+
 }
 
-           if (data.status === "failed") {
+   if (data.status === "failed") {
 
     clearInterval(interval);
 
@@ -522,8 +527,18 @@ function showFailModal(message){
 }
 
 function retryDeposit(){
+
     document.getElementById("failModal").style.display = "none";
+
+    document.getElementById("depositBtn").disabled = false;
+    document.getElementById("depositBtn").innerText = "Deposit Now";
+
+    document.getElementById("loader").style.display = "none";
 }
+  
+window.startDeposit = startDeposit;
+window.retryDeposit = retryDeposit;
+window.closeSuccessModal = closeSuccessModal;
 
 </script>
 <!-- SUCCESS MODAL -->
