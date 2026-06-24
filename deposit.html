@@ -264,7 +264,15 @@ button:disabled{
 
 </div>
 
-<script>
+<script type="module">
+import { auth, db } from "./firebase.js";
+
+import {
+doc,
+updateDoc,
+increment,
+setDoc
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const SERVER =
 "https://m-shwari-server.onrender.com";
@@ -419,6 +427,7 @@ async function checkPaymentStatus(
             console.log(data);
 
             if (data.status === "completed") {
+            console.log("PAYMENT COMPLETED");
 
     clearInterval(interval);
 
@@ -429,10 +438,43 @@ async function checkPaymentStatus(
     statusBox.style.display = "none";
 
     // ✅ ADD THIS: update dashboard balance
-    let currentBalance = Number(localStorage.getItem("walletBalance")) || 0;
-    let newBalance = currentBalance + amount;
+const user = auth.currentUser;
 
-    localStorage.setItem("walletBalance", newBalance);
+if(!user){
+    throw new Error("User not logged in");
+}
+
+try{
+
+    await updateDoc(
+        doc(db,"users",user.uid),
+        {
+            wallet: increment(amount),
+            earned: increment(amount)
+        }
+    );
+
+    console.log("Added amount:", amount);
+    console.log("Updating document:", user.uid);
+    console.log("Firestore updated successfully");
+
+}catch(error){
+
+    console.error("Firestore update failed:", error);
+
+    // If document doesn't exist, create it
+    await setDoc(
+        doc(db,"users",user.uid),
+        {
+            wallet: amount,
+            earned: amount,
+            withdrawn: 0
+        },
+        { merge:true }
+    );
+
+    console.log("User document created");
+}
 
     // optional tracking (earned)
     let earned = Number(localStorage.getItem("earnedAmount")) || 0;
@@ -528,4 +570,4 @@ function retryDeposit(){
 
 </div>
 </body>
-</html>
+    </html>
