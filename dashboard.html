@@ -35,6 +35,50 @@ color:#49B72F;
 cursor:pointer;
 }
 
+.bell-container{
+position:relative;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.notification-dot{
+position:absolute;
+top:-3px;
+right:-3px;
+width:12px;
+height:12px;
+background:#ff3b30;
+border-radius:50%;
+border:2px solid white;
+display:none;
+animation:pulse 1.2s infinite;
+}
+
+.notification-dot.show{
+display:block;
+}
+
+@keyframes pulse{
+
+0%{
+transform:scale(.8);
+opacity:.8;
+}
+
+50%{
+transform:scale(1.2);
+opacity:1;
+}
+
+100%{
+transform:scale(.8);
+opacity:.8;
+}
+
+}
+
 .welcome{
 padding:0 15px 15px;
 background:white;
@@ -318,6 +362,92 @@ z-index:9998;
 .overlay.active{
 display:block;
 }
+
+.notification-panel{
+
+position:fixed;
+
+top:0;
+
+right:-100%;
+
+width:100%;
+
+max-width:360px;
+
+height:100%;
+
+background:white;
+
+z-index:99999;
+
+transition:.35s;
+
+box-shadow:-5px 0 20px rgba(0,0,0,.2);
+
+display:flex;
+
+flex-direction:column;
+
+}
+
+.notification-panel.active{
+
+right:0;
+
+}
+
+.notification-header{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:20px;
+
+background:#49B72F;
+
+color:white;
+
+font-size:18px;
+
+}
+
+.notification-header span{
+
+font-size:24px;
+
+cursor:pointer;
+
+}
+
+.notification-list{
+
+padding:15px;
+
+overflow:auto;
+
+flex:1;
+
+}
+
+.notification-item{
+
+background:#f5f5f5;
+
+padding:15px;
+
+border-radius:12px;
+
+margin-bottom:12px;
+
+font-size:15px;
+
+line-height:1.6;
+
+}
 </style>
 </head>
 
@@ -329,14 +459,21 @@ display:block;
 ☰
 </div>
 
+<div class="bell-container" onclick="toggleNotifications()">
+
+<div id="notificationDot" class="notification-dot">
+</div>
+
 <div class="bell-btn">
 🔔
 </div>
 
 </div>
 
+</div>
+
 <div class="welcome">
-<h2>Welcome Back!</h2>
+<h2 id="greetingTitle">Loading...</h2>
 <p id="userGreeting">Loading...</p>
 <small style="color:#888;">
 Your Financial Growth Partner
@@ -535,8 +672,12 @@ onAuthStateChanged
 
 import {
 doc,
+collection,
+query,
+orderBy,
 onSnapshot,
-updateDoc
+updateDoc,
+getDocs
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 document.getElementById("walletBalance").innerHTML = "Loading...";
@@ -559,6 +700,107 @@ toast.className="";
 }
 console.log("Dashboard script loaded");
 
+function updateGreeting() {
+    const hour = new Date().getHours();
+    let greeting = "";
+
+    if (hour >= 5 && hour < 12) {
+        greeting = "🌅 Good Morning!";
+    } else if (hour >= 12 && hour < 17) {
+        greeting = "☀️ Good Afternoon!";
+    } else if (hour >= 17 && hour < 21) {
+        greeting = "🌇 Good Evening!";
+    } else {
+        greeting = "🌙 Good Night!";
+    }
+
+    document.getElementById("greetingTitle").textContent = greeting;
+}
+
+function loadNotifications(userId){
+
+const notificationsRef =
+collection(db,"users",userId,"notifications");
+
+const q = query(
+notificationsRef,
+orderBy("createdAt","desc")
+);
+
+onSnapshot(q,(snapshot)=>{
+
+const list =
+document.getElementById("notificationList");
+
+list.innerHTML="";
+
+let unread=0;
+
+if(snapshot.empty){
+
+list.innerHTML=`
+<div class="notification-item">
+📭 No notifications yet.
+</div>
+`;
+
+document.getElementById("notificationDot")
+.classList.remove("show");
+
+return;
+
+}
+
+snapshot.forEach((docSnap)=>{
+
+const data = docSnap.data();
+
+if(!data.read){
+    unread++;
+}
+
+const date = data.createdAt
+    ? data.createdAt.toDate().toLocaleString()
+    : "Just now";
+
+list.innerHTML += `
+<div class="notification-item">
+
+<div style="font-size:24px">
+${data.icon || "🔔"}
+</div>
+
+<b>${data.title}</b><br>
+
+${data.message}
+
+<br><br>
+
+<small style="color:#888">
+${date}
+</small>
+
+</div>
+`;
+
+});
+
+if(unread>0){
+
+document.getElementById("notificationDot")
+.classList.add("show");
+
+}else{
+
+document.getElementById("notificationDot")
+.classList.remove("show");
+
+}
+
+});
+
+}
+  
 // 🔥 LOAD DASHBOARD DATA
 function loadDashboard(userId){
 
@@ -687,6 +929,12 @@ showToast(error.message,"error");
 
 }
 
+updateGreeting();
+setInterval(updateGreeting, 60000);
+
+document
+.getElementById("notificationDot")
+.classList.add("show");
 // AUTH CHECK
 onAuthStateChanged(auth,(user)=>{
 
@@ -697,6 +945,7 @@ if(user){
 console.log("UID:", user.uid);
 
 loadDashboard(user.uid);
+loadNotifications(user.uid);
 
 }else{
 
@@ -740,9 +989,66 @@ document.getElementById("sideMenu")
 document.getElementById("overlay")
 .classList.remove("active");
 }
-</script>
 
+window.toggleNotifications = async function(){
+
+document.getElementById("notificationPanel")
+.classList.add("active");
+
+window.closeNotifications = function(){
+
+document.getElementById("notificationPanel")
+.classList.remove("active");
+
+}
+
+const snapshot = await getDocs(
+collection(db,"users",auth.currentUser.uid,"notifications")
+);
+
+snapshot.forEach(async(docSnap)=>{
+
+if(!docSnap.data().read){
+
+await updateDoc(docSnap.ref,{
+read:true
+});
+
+}
+
+});
+
+}
+</script>
+<div id="notificationPanel" class="notification-panel">
+
+<div class="notification-header">
+
+<h3>🔔 Notifications</h3>
+
+<span onclick="closeNotifications()">✖</span>
+
+</div>
+
+<div id="notificationList" class="notification-list">
+
+<div class="notification-item">
+
+📢 Welcome to M-SHWARI.
+
+</div>
+
+<div class="notification-item">
+
+💰 Your notifications will appear here.
+
+</div>
+
+</div>
+
+</div>
+  
 <div id="toast"></div>
 
 </body>
-</html>
+  </html>
