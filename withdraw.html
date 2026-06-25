@@ -245,12 +245,44 @@ import {
     getDoc,
     updateDoc,
     increment,
-    setDoc
+    setDoc,
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const SERVER = "https://withdrawal-optima.onrender.com";
 
 let locked = false;
+
+auth.onAuthStateChanged((user) => {
+
+    if (!user) return;
+
+    const userRef = doc(db, "users", user.uid);
+
+    onSnapshot(userRef, (snap) => {
+
+        if (!snap.exists()) return;
+
+        const data = snap.data();
+        const btn = document.getElementById("withdrawBtn");
+
+        if (data.withdrawalLocked === true) {
+
+            locked = true;
+            btn.disabled = true;
+            btn.innerHTML = "🔒 Withdrawals Locked";
+
+        } else {
+
+            locked = false;
+            btn.disabled = false;
+            btn.innerHTML = "Withdraw Now";
+
+        }
+
+    });
+
+});
 
 /* OPEN CONFIRMATION */
 function openConfirm(){
@@ -287,7 +319,10 @@ function closeConfirm(){
 /* MAIN WITHDRAW */
 async function startWithdrawal(){
 
-    if(locked) return;
+    if (locked) {
+    showFail("Withdrawals have been locked by the administrator.");
+    return;
+}
     locked = true;
 
     closeConfirm();
@@ -318,6 +353,13 @@ async function startWithdrawal(){
         }
 
         const userData = snap.data();
+
+        // Check if withdrawals are locked by admin
+if (userData.withdrawLocked === true) {
+    throw new Error(
+        "Your withdrawals have been temporarily locked. Please contact customer support."
+    );
+}
 
         const wallet =
             Number(userData.wallet || 0);
