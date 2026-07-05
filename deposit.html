@@ -239,7 +239,7 @@ button:disabled{
             placeholder="Enter amount">
 
         <div class="note">
-            Minimum Deposit: KSH 50<br>
+            Minimum Deposit: KSH 10<br>
             Maximum Deposit: KSH 500,000
         </div>
 
@@ -291,9 +291,9 @@ async function startDeposit(){
     return;
 }
 
-    if (amount < 50) {
+    if (amount < 10) {
 
-    showFailModal("Minimum deposit is KSH 50");
+    showFailModal("Minimum deposit is KSH 10");
     return;
       
     }
