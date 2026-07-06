@@ -123,10 +123,11 @@ Request Review
 <script>
 function requestReview() {
 
-    // Example user data (replace with real Firebase values if available)
-    const name = "USER_NAME";
-    const email = "USER_EMAIL";
-    const uid = "USER_ID";
+    const user = JSON.parse(localStorage.getItem("blockedUser")) || {};
+
+    const name = user.name || "Unknown User";
+    const email = user.email || "Unknown Email";
+    const uid = user.uid || "Unknown UID";
 
     const message = `
 🚨 M-SHWARI ACCOUNT REVIEW REQUEST
@@ -142,7 +143,6 @@ function requestReview() {
 
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
-    // Redirect to WhatsApp
     window.location.href = url;
 }
 </script>
