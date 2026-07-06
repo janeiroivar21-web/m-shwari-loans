@@ -110,8 +110,8 @@ Your M-SHWARI account has been restricted from accessing the platform.
 If you believe this is a mistake, please contact our support team for assistance.
 </p>
 
-<button onclick="contactSupport()">
-Contact Support
+<button onclick="requestReview()">
+Request Review
 </button>
 
 <p class="small">
@@ -121,11 +121,30 @@ Contact Support
 </div>
 
 <script>
+function requestReview() {
 
-function contactSupport(){
-    window.location.href = "support.html";
+    // Example user data (replace with real Firebase values if available)
+    const name = "USER_NAME";
+    const email = "USER_EMAIL";
+    const uid = "USER_ID";
+
+    const message = `
+🚨 M-SHWARI ACCOUNT REVIEW REQUEST
+
+👤 Name: ${name}
+📧 Email: ${email}
+🆔 User ID: ${uid}
+
+⚠️ Request: Please review my suspended account.
+    `;
+
+    const phone = "254706338937";
+
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+    // Redirect to WhatsApp
+    window.location.href = url;
 }
-
 </script>
 
 </body>
