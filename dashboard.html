@@ -881,6 +881,15 @@ return;
 
 const data = snap.data();
 
+  // Save user details locally
+localStorage.setItem("mshwariUser", JSON.stringify({
+    uid: userId,
+    fullName: data.fullName || "",
+    email: data.email || "",
+    wallet: data.wallet || 0,
+    status: data.status || "active"
+}));
+  
 document.getElementById("userGreeting").innerHTML =
 data.fullName || "M-SHWARI Member";
 
@@ -1226,4 +1235,4 @@ Your Financial Growth Partner
 <div id="toast"></div>
 
 </body>
-</html>
+    </html>
