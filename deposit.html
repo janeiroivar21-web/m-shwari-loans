@@ -272,7 +272,14 @@ doc,
 updateDoc,
 increment,
 setDoc,
-getDoc
+getDoc,
+collection,
+query,
+where,
+getDocs,
+addDoc,
+arrayUnion,
+serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const SERVER =
@@ -453,46 +460,127 @@ try{
     console.log("USER UID:", user.uid);
     console.log("AMOUNT:", amount);
 
-    await updateDoc(
-        userRef,
-        {
-            wallet: increment(amount),
-            earned: increment(amount)
-        }
-    );
+    await updateDoc(userRef, {
+
+    wallet: increment(amount),
+
+    earned: increment(amount),
+
+    transactions: arrayUnion({
+
+        type: "Deposit",
+
+        amount: amount,
+
+        status: "Completed",
+
+        date: new Date().toLocaleString(),
+
+        createdAt: serverTimestamp()
+
+    })
+
+});
 
     console.log("Firestore updated successfully");
+  // ===============================
+// REFERRAL BONUS
+// ===============================
+
+const userSnap = await getDoc(userRef);
+
+const userData = userSnap.data();
+
+if (
+    !userData.firstDepositRewarded &&
+    userData.referredBy
+) {
+
+    const q = query(
+        collection(db, "users"),
+        where("referralCode", "==", userData.referredBy)
+    );
+
+    const referrerSnap = await getDocs(q);
+
+    if (!referrerSnap.empty) {
+
+        const referrerDoc = referrerSnap.docs[0];
+
+        await updateDoc(referrerDoc.ref, {
+
+            wallet: increment(50),
+
+            referralEarnings: increment(50),
+
+            successfulReferrals: increment(1)
+
+        });
+
+        // Notification
+
+        await addDoc(
+
+            collection(
+                db,
+                "users",
+                referrerDoc.id,
+                "notifications"
+            ),
+
+            {
+
+                title: "Referral Bonus",
+
+                message:
+                `🎉 Congratulations! You earned KES 50 for referring ${userData.fullName}.`,
+
+                icon: "🎁",
+
+                createdAt: new Date(),
+
+                read: false
+
+            }
+
+        );
+
+        // Mark as rewarded
+
+        await updateDoc(userRef, {
+
+            firstDepositRewarded: true
+
+        });
+
+    }
+
+}
 
 }catch(error){
 
     console.error("Firestore update failed:", error);
 
     await setDoc(
-        doc(db,"users",user.uid),
-        {
-            wallet: amount,
-            earned: amount,
-            withdrawn: 0
-        },
-        { merge:true }
-    );
+    doc(db,"users",user.uid),
+    {
+        wallet: amount,
+        earned: amount,
+        withdrawn: 0,
+        transactions: [{
+            type: "Deposit",
+            amount: amount,
+            status: "Completed",
+            date: new Date().toLocaleString()
+        }]
+    },
+    { merge: true }
+);
 
     console.log("User document created");
 }
 
     // optional tracking (earned)
-    let earned = Number(localStorage.getItem("earnedAmount")) || 0;
-    localStorage.setItem("earnedAmount", earned + amount);
-     let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
-
-transactions.push({
-    type: "Deposit",
-    amount: amount,
-    status: "Completed",
-    date: new Date().toLocaleString()
-});
-
-localStorage.setItem("transactions", JSON.stringify(transactions));
 
 showSuccessModal(amount);
 
