@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Account Suspended - M-SHWARI</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f3f3f3;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.card{
+    background:white;
+    padding:30px 20px;
+    border-radius:18px;
+    box-shadow:0 2px 15px rgba(0,0,0,.1);
+    text-align:center;
+    max-width:400px;
+    width:90%;
+}
+
+.icon{
+    font-size:60px;
+    margin-bottom:15px;
+}
+
+h1{
+    color:#dc3545;
+    margin-bottom:10px;
+    font-size:24px;
+}
+
+p{
+    color:#666;
+    line-height:1.6;
+    font-size:15px;
+    margin-bottom:15px;
+}
+
+.notice{
+    background:#fff3f3;
+    border-left:4px solid #dc3545;
+    padding:12px;
+    text-align:left;
+    font-size:14px;
+    color:#555;
+    margin-bottom:20px;
+    border-radius:8px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    background:#49B72F;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#3ea024;
+}
+
+.small{
+    font-size:12px;
+    color:#888;
+    margin-top:15px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="icon">🚫</div>
+
+<h1>Account Suspended</h1>
+
+<p>
+Your M-SHWARI account has been restricted from accessing the platform.
+</p>
+
+<div class="notice">
+<strong>Possible reasons:</strong><br>
+• Violation of platform rules<br>
+• Suspicious activity detected<br>
+• Admin action due to policy enforcement
+</div>
+
+<p>
+If you believe this is a mistake, please contact our support team for assistance.
+</p>
+
+<button onclick="contactSupport()">
+Contact Support
+</button>
+
+<p class="small">
+© 2026 M-SHWARI. All Rights Reserved.
+</p>
+
+</div>
+
+<script>
+
+function contactSupport(){
+    window.location.href = "support.html";
+}
+
+</script>
+
+</body>
+</html>
