@@ -194,6 +194,29 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+function generateReferralCode(){
+
+    return "MSH" +
+    Math.random()
+    .toString(36)
+    .substring(2,8)
+    .toUpperCase();
+
+}
+  
+const params = new URLSearchParams(window.location.search);
+
+const referralFromLink = params.get("ref");
+
+if(referralFromLink){
+
+    const referralInput = document.getElementById("referral");
+
+    referralInput.value = referralFromLink;
+
+    referralInput.readOnly = true;
+
+}
 
 let usernameOK=false, phoneOK=false, passOK=false, confirmOK=false;
 
@@ -348,24 +371,52 @@ btn.disabled = true;
 btn.textContent = "Creating Account...";
 
 const user=await createUserWithEmailAndPassword(auth,email,password);
+const referralCode = generateReferralCode();
 
 await setDoc(doc(db,"users",user.user.uid),{
+
 uid: user.user.uid,
+
 fullName,
+
 displayName: fullName,
+
 username,
+
 phone,
+
 email,
-referral: referral || "",
-wallet: 0,
-earned: 0,
-withdrawn: 0,
-investment: 0,
-loanLimit: 0,
-status: "active",
-role: "user",
-createdAt: Date.now(),
-lastLogin: null
+
+wallet:0,
+
+earned:0,
+
+withdrawn:0,
+
+investment:null,
+
+loanLimit:0,
+
+status:"active",
+
+role:"user",
+
+createdAt:Date.now(),
+
+lastLogin:null,
+
+// Referral fields
+
+referralCode: referralCode,
+
+referredBy: referral || "",
+
+successfulReferrals:0,
+
+referralEarnings:0,
+
+firstDepositRewarded:false
+
 });
 
 showToast("Account created successfully!");
@@ -388,4 +439,4 @@ showToast(error.message,"error");
 </script>
 <div id="toast"></div>
 </body>
-  </html>
+</html>
