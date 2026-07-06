@@ -3,22 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Refer & Earn - M-SHWARI</title>
-
 <style>
-
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
     font-family:Arial,sans-serif;
 }
-
 body{
     background:#f3f3f3;
 }
-
 .header{
     background:#49B72F;
     color:white;
@@ -27,13 +22,11 @@ body{
     font-size:22px;
     font-weight:bold;
 }
-
 .container{
     max-width:500px;
     margin:20px auto;
     padding:15px;
 }
-
 .card{
     background:white;
     padding:20px;
@@ -41,7 +34,6 @@ body{
     margin-bottom:15px;
     box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
-
 .back-btn{
     display:inline-block;
     margin-bottom:15px;
@@ -49,7 +41,6 @@ body{
     text-decoration:none;
     font-weight:bold;
 }
-
 .ref-code{
     background:#eef9ea;
     border:2px dashed #49B72F;
@@ -61,7 +52,15 @@ body{
     border-radius:12px;
     margin:15px 0;
 }
-
+.ref-link{
+    background:#f8f8f8;
+    border:1px solid #ddd;
+    padding:12px;
+    border-radius:10px;
+    font-size:14px;
+    word-break:break-all;
+    margin-bottom:15px;
+}
 .info{
     background:#f8f8f8;
     border-left:4px solid #49B72F;
@@ -70,7 +69,6 @@ body{
     margin-top:10px;
     font-size:14px;
 }
-
 button{
     width:100%;
     padding:15px;
@@ -81,15 +79,19 @@ button{
     font-size:17px;
     font-weight:bold;
     cursor:pointer;
-    margin-top:15px;
+    margin-top:10px;
 }
-
+.whatsapp-btn{
+    background:#25D366;
+}
+.facebook-btn{
+    background:#1877F2;
+}
 .stats{
     display:flex;
     justify-content:space-between;
     gap:10px;
 }
-
 .stat{
     flex:1;
     background:#eef9ea;
@@ -97,12 +99,34 @@ button{
     border-radius:12px;
     text-align:center;
 }
-
 .stat h3{
     color:#49B72F;
     margin-bottom:5px;
 }
-
+.history-item{
+    padding:12px 0;
+    border-bottom:1px solid #eee;
+}
+.history-item:last-child{
+    border-bottom:none;
+}
+.history-name{
+    font-weight:bold;
+}
+.history-reward{
+    color:#49B72F;
+    font-weight:bold;
+}
+.loading{
+    text-align:center;
+    color:#666;
+    padding:20px 0;
+}
+.empty{
+    text-align:center;
+    color:#777;
+    padding:20px 0;
+}
 </style>
 </head>
 <body>
@@ -122,29 +146,33 @@ button{
 <h2>Invite Friends & Earn</h2>
 
 <p>
-Share your referral code with friends.
-When they join M-SHWARI and start using their account,
-you earn rewards instantly.
+Share your referral link with friends.
+When they register and make their first successful deposit,
+you earn <strong>KES 50</strong>.
 </p>
 
 <div class="ref-code" id="refCode">
 Loading...
 </div>
 
-<div class="info">
-🔗 Share this referral link with friends to earn rewards.
+<div class="ref-link" id="refLink">
+Loading referral link...
 </div>
 
-<button onclick="copyCode()">
-Copy Referral Code
+<button onclick="copyLink()">
+📋 Copy Referral Link
 </button>
 
-<button onclick="shareReferral()">
-📤 Share Referral Link
+<button class="whatsapp-btn" onclick="shareWhatsApp()">
+🟢 Share on WhatsApp
+</button>
+
+<button class="facebook-btn" onclick="shareFacebook()">
+🔵 Share on Facebook
 </button>
 
 <div class="info">
-💰 Earn KES 50 for every successful referral.
+💰 Earn <strong>KES 50</strong> for every successful referral after your friend makes their first successful deposit.
 </div>
 
 <div class="info">
@@ -165,7 +193,7 @@ Copy Referral Code
 </div>
 
 <div class="stat">
-<h3 id="earnings">0</h3>
+<h3 id="earnings">KES 0</h3>
 <p>Earnings</p>
 </div>
 
@@ -173,74 +201,134 @@ Copy Referral Code
 
 </div>
 
+<div class="card">
+
+<h2>Referral History</h2>
+
+<div id="historyList" class="loading">
+Loading referral history...
 </div>
 
-<script>
+</div>
 
-// Generate unique referral code once
-if(!localStorage.getItem("referralCode")){
+</div>
 
-    const code =
-    "MSH" +
-    Math.random().toString(36)
-    .substring(2,8)
-    .toUpperCase();
+<script type="module">
+import { auth, db } from "./firebase.js";
+import {
+    doc,
+    getDoc,
+    collection,
+    query,
+    orderBy,
+    onSnapshot
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
-    localStorage.setItem(
-        "referralCode",
-        code
-    );
-}
+let referralCode = "";
+let referralLink = "";
 
-const referralCode =
-localStorage.getItem("referralCode");
-
-const referralLink =
-"https://m-shwari.co.ke/signup.html?ref=" +
-referralCode;
-
-// Display referral link
-document.getElementById("refCode").innerHTML =
-referralLink;
-
-// Load stats
-document.getElementById("referrals").innerText =
-localStorage.getItem("totalReferrals") || 0;
-
-document.getElementById("earnings").innerText =
-(localStorage.getItem("referralEarnings") || 0);
-
-function copyCode(){
-
-    navigator.clipboard.writeText(referralLink);
-
-    alert("Referral link copied successfully!");
-}
-
-async function shareReferral(){
-
-    const message =
-`Join M-SHWARI today and start saving, borrowing and earning rewards.
-
-Use my referral link:
-${referralLink}`;
-
-    if(navigator.share){
-
-        try{
-            await navigator.share({
-                title:"M-SHWARI Referral",
-                text:message
-            });
-        }catch(err){}
-    }else{
-
-        navigator.clipboard.writeText(message);
-
-        alert("Referral message copied successfully!");
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = "login.html";
+        return;
     }
+
+    try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+            document.getElementById("refCode").innerText = "Not found";
+            document.getElementById("refLink").innerText = "User data not found";
+            return;
+        }
+
+        const userData = userSnap.data();
+
+        referralCode = userData.referralCode || "No Code";
+        referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
+
+        document.getElementById("refCode").innerText = referralCode;
+        document.getElementById("refLink").innerText = referralLink;
+
+        document.getElementById("referrals").innerText =
+            userData.successfulReferrals || 0;
+
+        document.getElementById("earnings").innerText =
+            "KES " + (userData.referralEarnings || 0).toLocaleString();
+
+        loadReferralHistory(user.uid);
+
+    } catch (error) {
+        console.error(error);
+        document.getElementById("refCode").innerText = "Error";
+        document.getElementById("refLink").innerText = "Could not load referral data";
+    }
+});
+
+function loadReferralHistory(userId) {
+    const historyRef = collection(db, "users", userId, "referralHistory");
+    const q = query(historyRef, orderBy("createdAt", "desc"));
+
+    onSnapshot(q, (snapshot) => {
+        const historyList = document.getElementById("historyList");
+
+        if (snapshot.empty) {
+            historyList.innerHTML = `
+                <div class="empty">
+                    No referral rewards yet.
+                </div>
+            `;
+            return;
+        }
+
+        historyList.innerHTML = "";
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const date = data.createdAt
+                ? data.createdAt.toDate().toLocaleDateString()
+                : "Recent";
+
+            historyList.innerHTML += `
+                <div class="history-item">
+                    <div class="history-name">
+                        ${data.referredUser || "Friend"}
+                    </div>
+                    <div class="history-reward">
+                        Reward: KES ${data.reward || 50}
+                    </div>
+                    <small>${date}</small>
+                </div>
+            `;
+        });
+    });
 }
 
+window.copyLink = async function () {
+    try {
+        await navigator.clipboard.writeText(referralLink);
+        alert("Referral link copied successfully!");
+    } catch (err) {
+        alert("Could not copy link. Please copy it manually.");
+    }
+};
+
+window.shareWhatsApp = function () {
+    const message =
+        `🎉 Join M-SHWARI today!\n\n` +
+        `Register using my referral link and make your first successful deposit.\n\n` +
+        `${referralLink}`;
+
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+};
+
+window.shareFacebook = function () {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`;
+    window.open(url, "_blank");
+};
 </script>
 
 </body>
