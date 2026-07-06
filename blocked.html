@@ -110,8 +110,8 @@ Your M-SHWARI account has been restricted from accessing the platform.
 If you believe this is a mistake, please contact our support team for assistance.
 </p>
 
-<button onclick="requestReview()">
-Request Review
+<button id="reviewBtn" onclick="requestReview()" disabled>
+Loading user data...
 </button>
 
 <p class="small">
@@ -127,11 +127,15 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase
 
 let currentUserData = null;
 
-// Load user when page opens
+const btn = document.getElementById("reviewBtn");
+
+// Disable button until ready
+btn.disabled = true;
+btn.innerText = "Loading user data...";
+
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
-        // not logged in → redirect back
         window.location.href = "login.html";
         return;
     }
@@ -148,14 +152,15 @@ onAuthStateChanged(auth, async (user) => {
             uid: user.uid
         };
     }
+
+    // ENABLE BUTTON AFTER LOAD
+    btn.disabled = false;
+    btn.innerText = "📩 Request Review";
 });
 
 window.requestReview = function () {
 
-    if (!currentUserData) {
-        alert("User data still loading, try again in 2 seconds");
-        return;
-    }
+    if (!currentUserData) return;
 
     const name = currentUserData.fullName || "Unknown User";
     const email = currentUserData.email || "Unknown Email";
