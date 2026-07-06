@@ -738,7 +738,8 @@ query,
 orderBy,
 onSnapshot,
 updateDoc,
-getDocs
+getDocs,
+getDoc
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 document.getElementById("walletBalance").innerHTML = "Loading...";
@@ -1024,24 +1025,47 @@ setInterval(updateGreeting, 60000);
 document
 .getElementById("notificationDot")
 .classList.add("show");
+  
 // AUTH CHECK
-onAuthStateChanged(auth,(user)=>{
+onAuthStateChanged(auth, async (user) => {
 
 console.log("AUTH USER:", user);
 
-if(user){
+if (!user) {
+    window.location.href = "login.html";
+    return;
+}
 
-console.log("UID:", user.uid);
+try {
 
+const userRef = doc(db, "users", user.uid);
+const snap = await getDoc(userRef);
+
+if (!snap.exists()) {
+    window.location.href = "login.html";
+    return;
+}
+
+const data = snap.data();
+
+// 🚫 BLOCK SUSPENDED / BANNED USERS
+if (data.status === "suspended" || data.status === "banned") {
+
+    await signOut(auth);
+
+    // redirect immediately (no popup)
+    window.location.replace("blocked.html");
+
+    return;
+}
+
+// ✅ ALLOW ACCESS
 loadDashboard(user.uid);
 loadNotifications(user.uid);
 
-}else{
-
-console.log("NO USER LOGGED IN");
-
-window.location.href="login.html";
-
+} catch (error) {
+    console.error(error);
+    window.location.href = "login.html";
 }
 
 });
@@ -1202,4 +1226,4 @@ Your Financial Growth Partner
 <div id="toast"></div>
 
 </body>
-</html>
+    </html>
