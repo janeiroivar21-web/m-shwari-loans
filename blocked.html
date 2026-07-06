@@ -120,14 +120,48 @@ Request Review
 
 </div>
 
-<script>
-function requestReview() {
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-    const user = JSON.parse(localStorage.getItem("blockedUser")) || {};
+let currentUserData = null;
 
-    const name = user.name || "Unknown User";
-    const email = user.email || "Unknown Email";
-    const uid = user.uid || "Unknown UID";
+// Load user when page opens
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        // not logged in → redirect back
+        window.location.href = "login.html";
+        return;
+    }
+
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+        currentUserData = snap.data();
+    } else {
+        currentUserData = {
+            fullName: user.email,
+            email: user.email,
+            uid: user.uid
+        };
+    }
+});
+
+window.requestReview = function () {
+
+    if (!currentUserData) {
+        alert("User data still loading, try again in 2 seconds");
+        return;
+    }
+
+    const name = currentUserData.fullName || "Unknown User";
+    const email = currentUserData.email || "Unknown Email";
+    const uid = currentUserData.uid || "Unknown UID";
+    const wallet = currentUserData.wallet || 0;
+    const status = currentUserData.status || "suspended";
 
     const message = `
 🚨 M-SHWARI ACCOUNT REVIEW REQUEST
@@ -135,16 +169,18 @@ function requestReview() {
 👤 Name: ${name}
 📧 Email: ${email}
 🆔 User ID: ${uid}
+💰 Wallet: KES ${wallet}
+⚠️ Status: ${status}
 
-⚠️ Request: Please review my suspended account.
-    `;
+📌 Request: Please review my account suspension.
+`;
 
     const phone = "254706338937";
 
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
     window.location.href = url;
-}
+};
 </script>
 
 </body>
