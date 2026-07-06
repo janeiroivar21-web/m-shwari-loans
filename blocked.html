@@ -140,14 +140,20 @@ onAuthStateChanged(auth, async (user) => {
         btn.disabled = true;
         btn.innerText = "Loading user data...";
 
-        // DEFAULT DATA (works even if not logged in)
-        currentUserData = {
-            fullName: "Guest User",
-            email: "Not logged in",
-            uid: "UNKNOWN",
-            wallet: 0,
-            status: "suspended"
-        };
+        // Load saved user data from localStorage
+const savedUser = localStorage.getItem("mshwariUser");
+
+if (savedUser) {
+    currentUserData = JSON.parse(savedUser);
+} else {
+    currentUserData = {
+        fullName: "Guest User",
+        email: "Not logged in",
+        uid: "UNKNOWN",
+        wallet: 0,
+        status: "suspended"
+    };
+}
 
         // ❗ If no user, stop here BUT DO NOT redirect
         if (!user) {
