@@ -738,8 +738,7 @@ query,
 orderBy,
 onSnapshot,
 updateDoc,
-getDocs,
-getDoc
+getDocs
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 document.getElementById("walletBalance").innerHTML = "Loading...";
@@ -881,15 +880,6 @@ return;
 
 const data = snap.data();
 
-  // Save user details locally
-localStorage.setItem("mshwariUser", JSON.stringify({
-    uid: userId,
-    fullName: data.fullName || "",
-    email: data.email || "",
-    wallet: data.wallet || 0,
-    status: data.status || "active"
-}));
-  
 document.getElementById("userGreeting").innerHTML =
 data.fullName || "M-SHWARI Member";
 
@@ -1034,47 +1024,24 @@ setInterval(updateGreeting, 60000);
 document
 .getElementById("notificationDot")
 .classList.add("show");
-  
 // AUTH CHECK
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth,(user)=>{
 
 console.log("AUTH USER:", user);
 
-if (!user) {
-    window.location.href = "login.html";
-    return;
-}
+if(user){
 
-try {
+console.log("UID:", user.uid);
 
-const userRef = doc(db, "users", user.uid);
-const snap = await getDoc(userRef);
-
-if (!snap.exists()) {
-    window.location.href = "login.html";
-    return;
-}
-
-const data = snap.data();
-
-// 🚫 BLOCK SUSPENDED / BANNED USERS
-if (data.status === "suspended" || data.status === "banned") {
-
-    await signOut(auth);
-
-    // redirect immediately (no popup)
-    window.location.replace("blocked.html");
-
-    return;
-}
-
-// ✅ ALLOW ACCESS
 loadDashboard(user.uid);
 loadNotifications(user.uid);
 
-} catch (error) {
-    console.error(error);
-    window.location.href = "login.html";
+}else{
+
+console.log("NO USER LOGGED IN");
+
+window.location.href="login.html";
+
 }
 
 });
@@ -1235,4 +1202,4 @@ Your Financial Growth Partner
 <div id="toast"></div>
 
 </body>
-    </html>
+</html>
