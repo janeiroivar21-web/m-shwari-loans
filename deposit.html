@@ -557,27 +557,24 @@ if (
 
 }
 
+try{
+
+    const userRef = doc(db,"users",user.uid);
+
+    await updateDoc(userRef,{
+        wallet: increment(amount),
+        earned: increment(amount)
+    });
+
+    console.log("Firestore updated successfully");
+
 }catch(error){
 
     console.error("Firestore update failed:", error);
 
-    await setDoc(
-    doc(db,"users",user.uid),
-    {
-        wallet: amount,
-        earned: amount,
-        withdrawn: 0,
-        transactions: [{
-            type: "Deposit",
-            amount: amount,
-            status: "Completed",
-            date: new Date().toLocaleString()
-        }]
-    },
-    { merge: true }
-);
+    alert(error.message);
 
-    console.log("User document created");
+    return;
 }
 
     // optional tracking (earned)
