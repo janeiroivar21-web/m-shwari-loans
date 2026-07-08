@@ -369,18 +369,45 @@ async function startDeposit(){
 }
   window.startDeposit = startDeposit;
   
-function showSuccessModal(amount){
+function showSuccessModal(amount, bonus, totalAmount){
+
+    let message = "";
+
+    if(bonus > 0){
+
+        message =
+        "🎊 Congratulations! 🎊<br><br>" +
+
+        "You have received a First Deposit Bonus.<br><br>" +
+
+        "Deposit Amount: KSH " +
+        amount.toLocaleString() +
+
+        "<br>Bonus: KSH " +
+        bonus.toLocaleString() +
+
+        "<br><br>Total Credited: KSH " +
+        totalAmount.toLocaleString();
+
+    }else{
+
+        message =
+        "KSH " +
+        amount.toLocaleString() +
+        " has been deposited successfully.";
+
+    }
+
 
     document.getElementById(
         "successText"
-    ).innerHTML =
-    "KSH " +
-    amount.toLocaleString() +
-    " has been deposited successfully.";
+    ).innerHTML = message;
+
 
     document.getElementById(
         "successModal"
     ).style.display = "flex";
+
 }
 
 function closeSuccessModal(){
@@ -450,34 +477,73 @@ try{
 
     const userRef = doc(db,"users",user.uid);
 
-    console.log("USER UID:", user.uid);
-    console.log("AMOUNT:", amount);
+    const userSnap = await getDoc(userRef);
+
+    let bonus = 0;
+
+
+    if(userSnap.exists()){
+
+        const userData = userSnap.data();
+
+
+        // First deposit bonus
+        if(
+            userData.firstDepositBonusClaimed !== true &&
+            amount >= 100
+        ){
+
+            bonus = amount * 0.30;
+
+        }
+
+
+    }
+
+
+    const totalAmount = amount + bonus;
+
 
     await updateDoc(
         userRef,
         {
-            wallet: increment(amount),
-            earned: increment(amount)
+
+            wallet: increment(totalAmount),
+
+            firstDepositBonusClaimed: true
+
         }
     );
 
-    console.log("Firestore updated successfully");
+
+    console.log("Deposit:", amount);
+
+    console.log("Bonus:", bonus);
+
+    console.log("Total credited:", totalAmount);
+
+
+
+    showSuccessModal(
+    amount,
+    bonus,
+    totalAmount
+);
+
 
 }catch(error){
 
-    console.error("Firestore update failed:", error);
-
-    await setDoc(
-        doc(db,"users",user.uid),
-        {
-            wallet: amount,
-            earned: amount,
-            withdrawn: 0
-        },
-        { merge:true }
+    console.error(
+        "Firestore update failed:",
+        error
     );
 
-    console.log("User document created");
+    showFailModal(
+        "Payment completed but wallet update failed. Contact support."
+    );
+
+}
+
 }
 
     // optional tracking (earned)
@@ -493,9 +559,7 @@ transactions.push({
 });
 
 localStorage.setItem("transactions", JSON.stringify(transactions));
-
-showSuccessModal(amount);
-
+          
 }
 
    if (data.status === "failed") {
@@ -549,7 +613,7 @@ window.closeSuccessModal = closeSuccessModal;
 
         <div class="checkmark">✓</div>
 
-        <h2>Deposit Successful</h2>
+        <h2 id="successTitle">Deposit Successful</h2>
 
         <p id="successText"></p>
 
