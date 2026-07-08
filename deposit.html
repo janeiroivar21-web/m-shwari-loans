@@ -1,665 +1,567 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Deposit to M-SHWARI</title>
-
-<style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
-
-body{
-    background:#f3f3f3;
-}
-
-.header{
-    background:#49B72F;
-    color:white;
-    text-align:center;
-    padding:20px;
-    font-size:22px;
-    font-weight:bold;
-}
-
-.container{
-    max-width:500px;
-    margin:20px auto;
-    padding:15px;
-}
-
-.card{
-    background:white;
-    border-radius:15px;
-    padding:20px;
-    box-shadow:0 2px 10px rgba(0,0,0,.08);
-}
-
-.card h2{
-    color:#49B72F;
-    margin-bottom:20px;
-    text-align:center;
-}
-
-label{
-    display:block;
-    margin-bottom:8px;
-    font-weight:bold;
-}
-
-input{
-    width:100%;
-    padding:15px;
-    border:1px solid #ddd;
-    border-radius:10px;
-    margin-bottom:15px;
-    font-size:16px;
-}
-
-.note{
-    background:#f8f8f8;
-    border-left:4px solid #49B72F;
-    padding:12px;
-    border-radius:8px;
-    margin-bottom:20px;
-    font-size:14px;
-    color:#555;
-}
-
-button{
-    width:100%;
-    padding:15px;
-    background:#49B72F;
-    color:white;
-    border:none;
-    border-radius:10px;
-    font-size:18px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-button:disabled{
-    opacity:.7;
-}
-
-.status-box{
-    margin-top:20px;
-    display:none;
-    text-align:center;
-    padding:15px;
-    border-radius:10px;
-    background:#eef9ea;
-    color:#2d7c1f;
-    font-weight:bold;
-}
-
-.loader{
-    display:none;
-    text-align:center;
-    margin-top:15px;
-}
-
-.loader span{
-    display:inline-block;
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    background:#49B72F;
-    margin:0 4px;
-    animation:bounce 1.4s infinite ease-in-out;
-}
-
-.loader span:nth-child(2){
-    animation-delay:.2s;
-}
-
-.loader span:nth-child(3){
-    animation-delay:.4s;
-}
-
-@keyframes bounce{
-    0%,80%,100%{
-        transform:scale(0);
-    }
-    40%{
-        transform:scale(1);
-    }
-}
-
-.back-btn{
-    display:inline-block;
-    margin-bottom:15px;
-    text-decoration:none;
-    color:#49B72F;
-    font-weight:bold;
-}
-.success-modal{
-    display:none;
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,.6);
-    justify-content:center;
-    align-items:center;
-    z-index:9999;
-}
-
-.success-box{
-    width:90%;
-    max-width:350px;
-    background:white;
-    border-radius:20px;
-    padding:30px;
-    text-align:center;
-    animation:pop .3s ease;
-}
-
-.checkmark{
-    width:80px;
-    height:80px;
-    background:#49B72F;
-    color:white;
-    font-size:50px;
-    border-radius:50%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    margin:auto;
-    margin-bottom:20px;
-}
-
-.success-box h2{
-    color:#49B72F;
-    margin-bottom:10px;
-}
-
-.success-box p{
-    color:#555;
-    margin-bottom:20px;
-}
-
-.success-box button{
-    background:#49B72F;
-    color:white;
-    border:none;
-    padding:12px 25px;
-    border-radius:10px;
-    font-size:16px;
-}
-
-@keyframes pop{
-    from{
-        transform:scale(.7);
-        opacity:0;
-    }
-    to{
-        transform:scale(1);
-        opacity:1;
-    }
-}
-
-</style>
-</head>
-<body>
-
-<div class="header">
-    Deposit to M-SHWARI
-</div>
-
-<div class="container">
-
-    <a href="dashboard.html" class="back-btn">
-        ← Back to Dashboard
-    </a>
-
-    <div class="card">
-
-        <h2>Deposit Funds</h2>
-
-        <label>M-PESA Phone Number</label>
-
-        <input
-            type="tel"
-            id="phone"
-            placeholder="07XXXXXXXX">
-
-        <label>Amount (KSH)</label>
-
-        <input
-            type="number"
-            id="amount"
-            placeholder="Enter amount">
-
-        <div class="note">
-            Minimum Deposit: KSH 10<br>
-            Maximum Deposit: KSH 500,000
-        </div>
-
-        <button
-            id="depositBtn"
-            onclick="startDeposit()">
-            Deposit Now
-        </button>
-
-        <div class="loader" id="loader">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-
-        <div
-            class="status-box"
-            id="statusBox">
-        </div>
-
-    </div>
-
-</div>
-
-<script type="module">
-import { auth, db } from "./firebase.js";
-
-import {
-doc,
-updateDoc,
-increment,
-getDoc
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-
-const SERVER =
-"https://m-shwari-server.onrender.com";
-
-async function startDeposit(){
-
-    const phone =
-    document.getElementById("phone").value.trim();
-
-    const amount =
-    Number(document.getElementById("amount").value);
-
-    if (!phone) {
-    showFailModal("Please enter your M-PESA phone number");
-    return;
-}
-
-    if (amount < 10) {
-
-    showFailModal("Minimum deposit is KSH 10");
-    return;
-      
-    }
-
-    if(amount > 500000){
-        showFailModal("Maximum deposit is KSH 500,000");
-        return;
-    }
-
-    const btn =
-    document.getElementById("depositBtn");
-
-    const loader =
-    document.getElementById("loader");
-
-    const statusBox =
-    document.getElementById("statusBox");
-
-    btn.disabled = true;
-    btn.innerText = "Sending STK Push...";
-    loader.style.display = "block";
-
-    try{
-
-        const response =
-        await fetch(
-            SERVER + "/stk-push",
-            {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify({
-                    phone,
-                    amount
-                })
-            }
-        );
-
-        const data =
-        await response.json();
-
-        console.log(data);
-
-        const checkoutId =
-            data.checkout_request_id ||
-            data.CheckoutRequestID;
-
-        if(!checkoutId){
-            throw new Error(
-                data.message ||
-                "Failed to initiate payment"
-            );
-        }
-
-        statusBox.style.display = "block";
-        statusBox.innerHTML =
-        "STK Push sent. Enter your M-PESA PIN.";
-
-        checkPaymentStatus(
-    checkoutId,
-    amount
-);
-
-    } catch(error){
-
-        loader.style.display = "none";
-        btn.disabled = false;
-        btn.innerText = "Deposit Now";
-
-        showFailModal(error.message || "Payment failed. Please try again.");
-    }
-}
-  window.startDeposit = startDeposit;
+<!DOCTYPE html> 
+<html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>Deposit to M-SHWARI</title>  <style>  
   
-function showSuccessModal(amount, bonus, totalAmount){
-
-    let message = "";
-
-    if(bonus > 0){
-
-document.getElementById("successTitle").innerHTML =
-"🎊 Bonus Awarded!";
-
-}else{
-
-document.getElementById("successTitle").innerHTML =
-"Deposit Successful";
-
-}
-
-    if(bonus > 0){
-
-        message =
-        "🎊 Congratulations! 🎊<br><br>" +
-
-        "You have received a First Deposit Bonus.<br><br>" +
-
-        "Deposit Amount: KSH " +
-        amount.toLocaleString() +
-
-        "<br>Bonus: KSH " +
-        bonus.toLocaleString() +
-
-        "<br><br>Total Credited: KSH " +
-        totalAmount.toLocaleString();
-
-    }else{
-
-        message =
-        "KSH " +
-        amount.toLocaleString() +
-        " has been deposited successfully.";
-
-    }
-
-
-    document.getElementById(
-        "successText"
-    ).innerHTML = message;
-
-
-    document.getElementById(
-        "successModal"
-    ).style.display = "flex";
-
-}
-
-function closeSuccessModal(){
-
-    window.location.href =
-    "dashboard.html";
-}
-
-async function checkPaymentStatus(
-    checkoutId,
-    amount
-){
-
-    const btn =
-    document.getElementById("depositBtn");
-
-    const loader =
-    document.getElementById("loader");
-
-    const statusBox =
-    document.getElementById("statusBox");
-
-    const interval =
-    setInterval(async()=>{
-
-        try{
-
-            const response =
-            await fetch(
-                SERVER + "/check-status",
-                {
-                    method:"POST",
-                    headers:{
-                        "Content-Type":"application/json"
-                    },
-                    body:JSON.stringify({
-                        checkout_request_id:
-                        checkoutId
-                    })
-                }
-            );
-
-            const data =
-            await response.json();
-
-            console.log(data);
-
-            if (data.status === "completed") {
-            console.log("PAYMENT COMPLETED");
-
-    clearInterval(interval);
-
-    loader.style.display = "none";
-    btn.disabled = false;
-    btn.innerText = "Deposit Now";
-
-    statusBox.style.display = "none";
-
-    // ✅ ADD THIS: update dashboard balance
-const user = auth.currentUser;
-
-if(!user){
-    throw new Error("User not logged in");
-}
-
-try{
-
-    const userRef = doc(db,"users",user.uid);
-
-    const userSnap = await getDoc(userRef);
-
-    let bonus = 0;
-
-
-    if(userSnap.exists()){
-
-        const userData = userSnap.data();
-
-
-        // First deposit bonus
-        if(
-            userData.firstDepositBonusClaimed !== true &&
-            amount >= 100
-        ){
-
-            bonus = amount * 0.30;
-
-        }
-
-
-    }
-
-
-    const totalAmount = amount + bonus;
-
-
-    await updateDoc(
-    userRef,
-    {
-
-        wallet: increment(totalAmount),
-
-        firstDepositBonusClaimed:
-        bonus > 0 ? true : false
-
-    }
-);
-
-
-    console.log("Deposit:", amount);
-
-    console.log("Bonus:", bonus);
-
-    console.log("Total credited:", totalAmount);
-
-
-
-    showSuccessModal(
-    amount,
-    bonus,
-    totalAmount
-);
-
-
-}catch(error){
-
-    console.error(
-        "Firestore update failed:",
-        error
-    );
-
-    showFailModal(
-        "Payment completed but wallet update failed. Contact support."
-    );
-
-}
-
-}
-
-    // optional tracking (earned)
-    let earned = Number(localStorage.getItem("earnedAmount")) || 0;
-    localStorage.setItem("earnedAmount", earned + amount);
-     let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
-
-transactions.push({
-    type: "Deposit",
-    amount: amount,
-    status: "Completed",
-    date: new Date().toLocaleString()
-});
-
-localStorage.setItem("transactions", JSON.stringify(transactions));
-          
-}
-
-   if (data.status === "failed") {
-
-    clearInterval(interval);
-
-    loader.style.display = "none";
-    btn.disabled = false;
-    btn.innerText = "Deposit Now";
-
-    statusBox.style.display = "none";
-
-    showFailModal(
-        data.message || "Payment failed. Please try again."
-    );
-} 
-
-        }catch(error){
-            console.log(error);
-        }
-
-    },5000);
-}
-
-function showFailModal(message){
-    document.getElementById("failText").innerText =
-        message || "Transaction failed. Please try again.";
-
-    document.getElementById("failModal").style.display = "flex";
-}
-
-function retryDeposit(){
-
-    document.getElementById("failModal").style.display = "none";
-
-    document.getElementById("depositBtn").disabled = false;
-    document.getElementById("depositBtn").innerText = "Deposit Now";
-
-    document.getElementById("loader").style.display = "none";
-}
+*{  
+    margin:0;  
+    padding:0;  
+    box-sizing:border-box;  
+    font-family:Arial,sans-serif;  
+}  
   
-window.startDeposit = startDeposit;
-window.retryDeposit = retryDeposit;
-window.closeSuccessModal = closeSuccessModal;
+body{  
+    background:#f3f3f3;  
+}  
+  
+.header{  
+    background:#49B72F;  
+    color:white;  
+    text-align:center;  
+    padding:20px;  
+    font-size:22px;  
+    font-weight:bold;  
+}  
+  
+.container{  
+    max-width:500px;  
+    margin:20px auto;  
+    padding:15px;  
+}  
+  
+.card{  
+    background:white;  
+    border-radius:15px;  
+    padding:20px;  
+    box-shadow:0 2px 10px rgba(0,0,0,.08);  
+}  
+  
+.card h2{  
+    color:#49B72F;  
+    margin-bottom:20px;  
+    text-align:center;  
+}  
+  
+label{  
+    display:block;  
+    margin-bottom:8px;  
+    font-weight:bold;  
+}  
+  
+input{  
+    width:100%;  
+    padding:15px;  
+    border:1px solid #ddd;  
+    border-radius:10px;  
+    margin-bottom:15px;  
+    font-size:16px;  
+}  
+  
+.note{  
+    background:#f8f8f8;  
+    border-left:4px solid #49B72F;  
+    padding:12px;  
+    border-radius:8px;  
+    margin-bottom:20px;  
+    font-size:14px;  
+    color:#555;  
+}  
+  
+button{  
+    width:100%;  
+    padding:15px;  
+    background:#49B72F;  
+    color:white;  
+    border:none;  
+    border-radius:10px;  
+    font-size:18px;  
+    font-weight:bold;  
+    cursor:pointer;  
+}  
+  
+button:disabled{  
+    opacity:.7;  
+}  
+  
+.status-box{  
+    margin-top:20px;  
+    display:none;  
+    text-align:center;  
+    padding:15px;  
+    border-radius:10px;  
+    background:#eef9ea;  
+    color:#2d7c1f;  
+    font-weight:bold;  
+}  
+  
+.loader{  
+    display:none;  
+    text-align:center;  
+    margin-top:15px;  
+}  
+  
+.loader span{  
+    display:inline-block;  
+    width:12px;  
+    height:12px;  
+    border-radius:50%;  
+    background:#49B72F;  
+    margin:0 4px;  
+    animation:bounce 1.4s infinite ease-in-out;  
+}  
+  
+.loader span:nth-child(2){  
+    animation-delay:.2s;  
+}  
+  
+.loader span:nth-child(3){  
+    animation-delay:.4s;  
+}  
+  
+@keyframes bounce{  
+    0%,80%,100%{  
+        transform:scale(0);  
+    }  
+    40%{  
+        transform:scale(1);  
+    }  
+}  
+  
+.back-btn{  
+    display:inline-block;  
+    margin-bottom:15px;  
+    text-decoration:none;  
+    color:#49B72F;  
+    font-weight:bold;  
+}  
+.success-modal{  
+    display:none;  
+    position:fixed;  
+    top:0;  
+    left:0;  
+    width:100%;  
+    height:100%;  
+    background:rgba(0,0,0,.6);  
+    justify-content:center;  
+    align-items:center;  
+    z-index:9999;  
+}  
+  
+.success-box{  
+    width:90%;  
+    max-width:350px;  
+    background:white;  
+    border-radius:20px;  
+    padding:30px;  
+    text-align:center;  
+    animation:pop .3s ease;  
+}  
+  
+.checkmark{  
+    width:80px;  
+    height:80px;  
+    background:#49B72F;  
+    color:white;  
+    font-size:50px;  
+    border-radius:50%;  
+    display:flex;  
+    justify-content:center;  
+    align-items:center;  
+    margin:auto;  
+    margin-bottom:20px;  
+}  
+  
+.success-box h2{  
+    color:#49B72F;  
+    margin-bottom:10px;  
+}  
+  
+.success-box p{  
+    color:#555;  
+    margin-bottom:20px;  
+}  
+  
+.success-box button{  
+    background:#49B72F;  
+    color:white;  
+    border:none;  
+    padding:12px 25px;  
+    border-radius:10px;  
+    font-size:16px;  
+}  
+  
+@keyframes pop{  
+    from{  
+        transform:scale(.7);  
+        opacity:0;  
+    }  
+    to{  
+        transform:scale(1);  
+        opacity:1;  
+    }  
+}  
+  
+</style>  </head>  
+<body>  <div class="header">  
+    Deposit to M-SHWARI  
+</div>  <div class="container">  <a href="dashboard.html" class="back-btn">  
+    ← Back to Dashboard  
+</a>  
 
-</script>
-<!-- SUCCESS MODAL -->
-<div id="successModal" class="success-modal">
+<div class="card">  
 
-    <div class="success-box">
+    <h2>Deposit Funds</h2>  
 
-        <div class="checkmark">✓</div>
+    <label>M-PESA Phone Number</label>  
 
-        <h2 id="successTitle">Deposit Successful</h2>
+    <input  
+        type="tel"  
+        id="phone"  
+        placeholder="07XXXXXXXX">  
 
-        <p id="successText"></p>
+    <label>Amount (KSH)</label>  
 
-        <button onclick="closeSuccessModal()">
-            Continue
-        </button>
+    <input  
+        type="number"  
+        id="amount"  
+        placeholder="Enter amount">  
 
-    </div>
+    <div class="note">  
+        Minimum Deposit: KSH 10<br>  
+        Maximum Deposit: KSH 500,000  
+    </div>  
+
+    <button  
+        id="depositBtn"  
+        onclick="startDeposit()">  
+        Deposit Now  
+    </button>  
+
+    <div class="loader" id="loader">  
+        <span></span>  
+        <span></span>  
+        <span></span>  
+    </div>  
+
+    <div  
+        class="status-box"  
+        id="statusBox">  
+    </div>  
+
 </div>
 
+</div>  <script type="module">  
+import { auth, db } from "./firebase.js";  
+  
+import {  
+doc,  
+updateDoc,  
+increment,  
+setDoc,  
+getDoc  
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";  
+  
+const SERVER =  
+"https://m-shwari-server.onrender.com";  
+  
+async function startDeposit(){  
+  
+    const phone =  
+    document.getElementById("phone").value.trim();  
+  
+    const amount =  
+    Number(document.getElementById("amount").value);  
+  
+    if (!phone) {  
+    showFailModal("Please enter your M-PESA phone number");  
+    return;  
+}  
+  
+    if (amount < 10) {  
+  
+    showFailModal("Minimum deposit is KSH 10");  
+    return;  
+        
+    }  
+  
+    if(amount > 500000){  
+        showFailModal("Maximum deposit is KSH 500,000");  
+        return;  
+    }  
+  
+    const btn =  
+    document.getElementById("depositBtn");  
+  
+    const loader =  
+    document.getElementById("loader");  
+  
+    const statusBox =  
+    document.getElementById("statusBox");  
+  
+    btn.disabled = true;  
+    btn.innerText = "Sending STK Push...";  
+    loader.style.display = "block";  
+  
+    try{  
+  
+        const response =  
+        await fetch(  
+            SERVER + "/stk-push",  
+            {  
+                method:"POST",  
+                headers:{  
+                    "Content-Type":"application/json"  
+                },  
+                body:JSON.stringify({  
+                    phone,  
+                    amount  
+                })  
+            }  
+        );  
+  
+        const data =  
+        await response.json();  
+  
+        console.log(data);  
+  
+        const checkoutId =  
+            data.checkout_request_id ||  
+            data.CheckoutRequestID;  
+  
+        if(!checkoutId){  
+            throw new Error(  
+                data.message ||  
+                "Failed to initiate payment"  
+            );  
+        }  
+  
+        statusBox.style.display = "block";  
+        statusBox.innerHTML =  
+        "STK Push sent. Enter your M-PESA PIN.";  
+  
+        checkPaymentStatus(  
+    checkoutId,  
+    amount  
+);  
+  
+    } catch(error){  
+  
+        loader.style.display = "none";  
+        btn.disabled = false;  
+        btn.innerText = "Deposit Now";  
+  
+        showFailModal(error.message || "Payment failed. Please try again.");  
+    }  
+}  
+  window.startDeposit = startDeposit;  
+    
+function showSuccessModal(amount){  
+  
+    document.getElementById(  
+        "successText"  
+    ).innerHTML =  
+    "KSH " +  
+    amount.toLocaleString() +  
+    " has been deposited successfully.";  
+  
+    document.getElementById(  
+        "successModal"  
+    ).style.display = "flex";  
+}  
+  
+function closeSuccessModal(){  
+  
+    window.location.href =  
+    "dashboard.html";  
+}  
+  
+async function checkPaymentStatus(  
+    checkoutId,  
+    amount  
+){  
+  
+    const btn =  
+    document.getElementById("depositBtn");  
+  
+    const loader =  
+    document.getElementById("loader");  
+  
+    const statusBox =  
+    document.getElementById("statusBox");  
+  
+    const interval =  
+    setInterval(async()=>{  
+  
+        try{  
+  
+            const response =  
+            await fetch(  
+                SERVER + "/check-status",  
+                {  
+                    method:"POST",  
+                    headers:{  
+                        "Content-Type":"application/json"  
+                    },  
+                    body:JSON.stringify({  
+                        checkout_request_id:  
+                        checkoutId  
+                    })  
+                }  
+            );  
+  
+            const data =  
+            await response.json();  
+  
+            console.log(data);  
+  
+            if (data.status === "completed") {  
+            console.log("PAYMENT COMPLETED");  
+  
+    clearInterval(interval);  
+  
+    loader.style.display = "none";  
+    btn.disabled = false;  
+    btn.innerText = "Deposit Now";  
+  
+    statusBox.style.display = "none";  
+  
+    // ✅ ADD THIS: update dashboard balance  
+const user = auth.currentUser;  
+  
+if(!user){  
+    throw new Error("User not logged in");  
+}  
+  
+try{  
+  
+    const userRef = doc(db,"users",user.uid);  
+  
+    console.log("USER UID:", user.uid);  
+    console.log("AMOUNT:", amount);  
+  
+    await updateDoc(  
+        userRef,  
+        {  
+            wallet: increment(amount),  
+            earned: increment(amount)  
+        }  
+    );  
+  
+    console.log("Firestore updated successfully");  
+  
+}catch(error){  
+  
+    console.error("Firestore update failed:", error);  
+  
+    await setDoc(  
+        doc(db,"users",user.uid),  
+        {  
+            wallet: amount,  
+            earned: amount,  
+            withdrawn: 0  
+        },  
+        { merge:true }  
+    );  
+  
+    console.log("User document created");  
+}  
+  
+    // optional tracking (earned)  
+    let earned = Number(localStorage.getItem("earnedAmount")) || 0;  
+    localStorage.setItem("earnedAmount", earned + amount);  
+     let transactions = JSON.parse(localStorage.getItem("transactions")) || [];  
+  
+transactions.push({  
+    type: "Deposit",  
+    amount: amount,  
+    status: "Completed",  
+    date: new Date().toLocaleString()  
+});  
+  
+localStorage.setItem("transactions", JSON.stringify(transactions));  
+  
+showSuccessModal(amount);  
+  
+}  
+  
+   if (data.status === "failed") {  
+  
+    clearInterval(interval);  
+  
+    loader.style.display = "none";  
+    btn.disabled = false;  
+    btn.innerText = "Deposit Now";  
+  
+    statusBox.style.display = "none";  
+  
+    showFailModal(  
+        data.message || "Payment failed. Please try again."  
+    );  
+}   
+  
+        }catch(error){  
+            console.log(error);  
+        }  
+  
+    },5000);  
+}  
+  
+function showFailModal(message){  
+    document.getElementById("failText").innerText =  
+        message || "Transaction failed. Please try again.";  
+  
+    document.getElementById("failModal").style.display = "flex";  
+}  
+  
+function retryDeposit(){  
+  
+    document.getElementById("failModal").style.display = "none";  
+  
+    document.getElementById("depositBtn").disabled = false;  
+    document.getElementById("depositBtn").innerText = "Deposit Now";  
+  
+    document.getElementById("loader").style.display = "none";  
+}  
+    
+window.startDeposit = startDeposit;  
+window.retryDeposit = retryDeposit;  
+window.closeSuccessModal = closeSuccessModal;  
+  
+</script>  <!-- SUCCESS MODAL -->  <div id="successModal" class="success-modal">  <div class="success-box">  
 
-<!-- FAIL MODAL (NEW FIXED VERSION) -->
-<div id="failModal" class="success-modal">
+    <div class="checkmark">✓</div>  
 
-    <div class="success-box">
+    <h2>Deposit Successful</h2>  
 
-        <div class="checkmark" style="background:#e74c3c;">
-            ✕
-        </div>
+    <p id="successText"></p>  
 
-        <h2 style="color:#e74c3c;">
-            Payment Failed
-        </h2>
-
-        <p id="failText">
-            Transaction could not be completed.
-        </p>
-
-        <button onclick="retryDeposit()" style="background:#e74c3c;">
-            Try Again
-        </button>
-
-    </div>
+    <button onclick="closeSuccessModal()">  
+        Continue  
+    </button>  
 
 </div>
-</body>
-    </html>
+
+</div>  <!-- FAIL MODAL (NEW FIXED VERSION) -->  <div id="failModal" class="success-modal">  <div class="success-box">  
+
+    <div class="checkmark" style="background:#e74c3c;">  
+        ✕  
+    </div>  
+
+    <h2 style="color:#e74c3c;">  
+        Payment Failed  
+    </h2>  
+
+    <p id="failText">  
+        Transaction could not be completed.  
+    </p>  
+
+    <button onclick="retryDeposit()" style="background:#e74c3c;">  
+        Try Again  
+    </button>  
+
+</div>
+
+</div>  
+</body>  
+</html>
