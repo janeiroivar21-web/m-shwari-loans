@@ -271,7 +271,6 @@ import {
 doc,
 updateDoc,
 increment,
-setDoc,
 getDoc
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
@@ -372,6 +371,18 @@ async function startDeposit(){
 function showSuccessModal(amount, bonus, totalAmount){
 
     let message = "";
+
+    if(bonus > 0){
+
+document.getElementById("successTitle").innerHTML =
+"🎊 Bonus Awarded!";
+
+}else{
+
+document.getElementById("successTitle").innerHTML =
+"Deposit Successful";
+
+}
 
     if(bonus > 0){
 
@@ -505,15 +516,16 @@ try{
 
 
     await updateDoc(
-        userRef,
-        {
+    userRef,
+    {
 
-            wallet: increment(totalAmount),
+        wallet: increment(totalAmount),
 
-            firstDepositBonusClaimed: true
+        firstDepositBonusClaimed:
+        bonus > 0 ? true : false
 
-        }
-    );
+    }
+);
 
 
     console.log("Deposit:", amount);
@@ -650,4 +662,4 @@ window.closeSuccessModal = closeSuccessModal;
 
 </div>
 </body>
-</html>
+    </html>
