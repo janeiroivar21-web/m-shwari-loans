@@ -189,7 +189,8 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-let currentUser=null;
+let currentUser = null;
+let firebaseReady = false;
 
 let aiSession = localStorage.getItem("enockSession");
 
@@ -212,9 +213,17 @@ function toast(msg){
 }
 
 onAuthStateChanged(auth, async(user)=>{
- if(!user) return;
+
+ if(!user){
+
+   toast("Please login to use Enock AI");
+
+   return;
+
+ }
 
  currentUser=user;
+ firebaseReady=true;
 
  const snap=await getDoc(doc(db,"users",user.uid));
 
@@ -270,6 +279,16 @@ document.getElementById("aiBox")
 
 
 window.sendAI=async function(){
+
+
+if(!firebaseReady || !currentUser){
+
+toast("Please login first to chat with Enock AI");
+
+return;
+
+}
+
 
 let input=document.getElementById("aiInput");
 
@@ -328,6 +347,23 @@ uid:currentUser.uid
 
 
 let data = await response.json();
+
+
+if(!data.success){
+
+chat.innerHTML += `
+
+<div class="ai-message">
+
+⚠️ ${data.message}
+
+</div>
+
+`;
+
+return;
+
+ }
 
 
 
