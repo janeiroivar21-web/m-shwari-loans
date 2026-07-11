@@ -19,6 +19,85 @@ textarea{height:120px;resize:none}
 .q{font-weight:bold;color:#333}
 .a{color:#666;margin-top:5px}
 #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 18px;border-radius:10px;display:none}
+
+ /* ENOCK AI CHAT */
+
+.ai-button{
+position:fixed;
+right:20px;
+bottom:20px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#49B72F;
+color:white;
+font-size:28px;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+box-shadow:0 5px 15px rgba(0,0,0,.3);
+z-index:999;
+}
+
+.ai-box{
+position:fixed;
+right:20px;
+bottom:90px;
+width:330px;
+height:450px;
+background:white;
+border-radius:18px;
+box-shadow:0 5px 25px rgba(0,0,0,.3);
+display:none;
+flex-direction:column;
+overflow:hidden;
+z-index:999;
+}
+
+.ai-header{
+background:#49B72F;
+color:white;
+padding:15px;
+font-weight:bold;
+}
+
+.ai-messages{
+flex:1;
+padding:10px;
+overflow-y:auto;
+}
+
+.ai-message{
+background:#f1f1f1;
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+.user-message{
+background:#49B72F;
+color:white;
+}
+
+.ai-input{
+display:flex;
+padding:10px;
+gap:5px;
+}
+
+.ai-input input{
+margin:0;
+flex:1;
+}
+
+.ai-input button{
+width:70px;
+background:#49B72F;
+color:white;
+border:none;
+border-radius:8px;
+}
 </style>
 </head>
 <body>
@@ -69,12 +148,61 @@ textarea{height:120px;resize:none}
 
 <div id="toast"></div>
 
+
+<!-- ENOCK AI CHAT -->
+
+<div class="ai-button" onclick="openAI()">
+🤖
+</div>
+
+
+<div class="ai-box" id="aiBox">
+
+<div class="ai-header">
+🤖 Enock AI Assistant
+</div>
+
+
+<div class="ai-messages" id="aiMessages">
+
+<div class="ai-message">
+Hello 👋 I'm Enock AI. How can I help you today?
+</div>
+
+</div>
+
+
+<div class="ai-input">
+
+<input id="aiInput" placeholder="Ask Enock...">
+
+<button onclick="sendAI()">
+Send
+</button>
+
+</div>
+
+</div>
+
 <script type="module">
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 let currentUser=null;
+
+let aiSession = localStorage.getItem("enockSession");
+
+if(!aiSession){
+
+aiSession = "MSH_" + Date.now();
+
+localStorage.setItem(
+"enockSession",
+aiSession
+);
+
+ }
 
 function toast(msg){
  const t=document.getElementById("toast");
@@ -131,6 +259,111 @@ submitBtn.addEventListener("click", async()=>{
  }
 
 });
+
+window.openAI=function(){
+
+document.getElementById("aiBox")
+.style.display="flex";
+
+}
+
+
+
+window.sendAI=async function(){
+
+let input=document.getElementById("aiInput");
+
+let message=input.value.trim();
+
+
+if(!message){
+return;
+}
+
+
+let chat=document.getElementById("aiMessages");
+
+
+chat.innerHTML += `
+
+<div class="ai-message user-message">
+${message}
+</div>
+
+`;
+
+
+input.value="";
+
+
+try{
+
+
+let response = await fetch(
+
+"https://ai-backend-s5oy.onrender.com/api/chat.php",
+
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+message:message,
+
+session:aiSession,
+
+uid:currentUser.uid
+
+})
+
+}
+
+);
+
+
+
+let data = await response.json();
+
+
+
+chat.innerHTML += `
+
+<div class="ai-message">
+
+${data.reply}
+
+</div>
+
+`;
+
+
+
+chat.scrollTop=chat.scrollHeight;
+
+
+
+}catch(error){
+
+
+chat.innerHTML += `
+
+<div class="ai-message">
+
+⚠️ Enock AI is temporarily unavailable.
+
+</div>
+
+`;
+
+}
+
+
+}
 </script>
 
 </body>
