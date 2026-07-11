@@ -385,18 +385,19 @@ chat.scrollTop=chat.scrollHeight;
 
 }catch(error){
 
+console.error(error);
 
 chat.innerHTML += `
 
 <div class="ai-message">
 
-⚠️ Enock AI is temporarily unavailable.
+⚠️ Error: ${error.message}
 
 </div>
 
 `;
 
-}
+ }
 
 
 }
