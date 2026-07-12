@@ -367,14 +367,12 @@ return;
 
 
 
+const reply = data.data?.reply || "Sorry, I couldn't generate a reply.";
+
 chat.innerHTML += `
-
 <div class="ai-message">
-
-${data.reply}
-
+${reply}
 </div>
-
 `;
 
 
