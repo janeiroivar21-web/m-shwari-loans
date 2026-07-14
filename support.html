@@ -346,8 +346,13 @@ uid:currentUser.uid
 
 
 
-let data = await response.json();
+let text = await response.text();
 
+console.log(text);
+
+alert(text);
+
+let data = JSON.parse(text);
 
 if(!data.success){
 
@@ -381,18 +386,16 @@ chat.scrollTop=chat.scrollHeight;
 
 
 
-}catch(error){
+catch(error){
 
 console.error(error);
 
+alert(error.message);
+
 chat.innerHTML += `
-
 <div class="ai-message">
-
-⚠️ Error: ${error.message}
-
+⚠️ ${error.message}
 </div>
-
 `;
 
  }
