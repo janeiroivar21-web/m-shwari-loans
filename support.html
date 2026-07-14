@@ -317,89 +317,63 @@ input.value="";
 
 try{
 
+   let response = await fetch(
+      "https://ai-backend-s5oy.onrender.com/api/chat.php",
+      {
+         method:"POST",
+         headers:{
+            "Content-Type":"application/json"
+         },
+         body:JSON.stringify({
+            message:message,
+            session:aiSession,
+            uid:currentUser.uid
+         })
+      }
+   );
 
-let response = await fetch(
+   let text = await response.text();
 
-"https://ai-backend-s5oy.onrender.com/api/chat.php",
+   console.log(text);
 
-{
+   alert(text);
 
-method:"POST",
+   let data = JSON.parse(text);
 
-headers:{
-"Content-Type":"application/json"
-},
+   if(!data.success){
 
-body:JSON.stringify({
+      chat.innerHTML += `
+      <div class="ai-message">
+      ⚠️ ${data.message}
+      </div>
+      `;
 
-message:message,
+      return;
+   }
 
-session:aiSession,
+   const reply = data.data?.reply || "Sorry, I couldn't generate a reply.";
 
-uid:currentUser.uid
+   chat.innerHTML += `
+   <div class="ai-message">
+   ${reply}
+   </div>
+   `;
 
-})
+   chat.scrollTop = chat.scrollHeight;
+
+} catch(error){
+
+   console.error(error);
+
+   alert(error.message);
+
+   chat.innerHTML += `
+   <div class="ai-message">
+   ⚠️ ${error.message}
+   </div>
+   `;
 
 }
-
-);
-
-
-
-let text = await response.text();
-
-console.log(text);
-
-alert(text);
-
-let data = JSON.parse(text);
-
-if(!data.success){
-
-chat.innerHTML += `
-
-<div class="ai-message">
-
-⚠️ ${data.message}
-
-</div>
-
-`;
-
-return;
-
- }
-
-
-
-const reply = data.data?.reply || "Sorry, I couldn't generate a reply.";
-
-chat.innerHTML += `
-<div class="ai-message">
-${reply}
-</div>
-`;
-
-
-
-chat.scrollTop=chat.scrollHeight;
-
-
-
-catch(error){
-
-console.error(error);
-
-alert(error.message);
-
-chat.innerHTML += `
-<div class="ai-message">
-⚠️ ${error.message}
-</div>
-`;
-
- }
-
 
 }
 </script>
