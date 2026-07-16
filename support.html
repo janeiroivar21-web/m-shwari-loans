@@ -191,6 +191,7 @@ import { collection, addDoc, serverTimestamp, doc, getDoc } from "https://www.gs
 
 let currentUser = null;
 let firebaseReady = false;
+let aiUser = {};
 
 let aiSession = localStorage.getItem("enockSession");
 
@@ -228,9 +229,26 @@ onAuthStateChanged(auth, async(user)=>{
  const snap=await getDoc(doc(db,"users",user.uid));
 
  if(snap.exists()){
-   const data=snap.data();
-   fullName.value=data.fullName||"";
-   email.value=data.email||"";
+
+   const data = snap.data();
+
+   fullName.value = data.fullName || "";
+   email.value = data.email || "";
+
+   aiUser = {
+      uid: user.uid,
+      fullName: data.fullName || "",
+      email: data.email || "",
+      phone: data.phone || "",
+      wallet: data.wallet || 0,
+      earned: data.earned || 0,
+      withdrawn: data.withdrawn || 0,
+      loanLimit: (data.wallet || 0) * 5,
+      investment: data.investment || null,
+      referrals: data.referrals || 0,
+      activeLoan: data.activeLoan || null
+   };
+
  }
 });
 
@@ -325,10 +343,11 @@ try{
             "Content-Type":"application/json"
          },
          body:JSON.stringify({
-            message:message,
-            session:aiSession,
-            uid:currentUser.uid
-         })
+    message: message,
+    session: aiSession,
+    uid: currentUser.uid,
+    user: aiUser
+})
       }
    );
 
