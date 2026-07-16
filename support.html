@@ -351,49 +351,44 @@ try{
       }
    );
 
-   let text = await response.text();
+   const data = await response.json();
 
-   console.log(text);
+console.log(data);
 
-   alert(text);
+if (!data.success) {
 
-   let data = JSON.parse(text);
+    chat.innerHTML += `
+    <div class="ai-message">
+    ⚠️ ${data.message}
+    </div>
+    `;
 
-   if(!data.success){
+    chat.scrollTop = chat.scrollHeight;
+    return;
+}
 
-      chat.innerHTML += `
-      <div class="ai-message">
-      ⚠️ ${data.message}
-      </div>
-      `;
+const reply = data.data.reply;
 
-      return;
-   }
+chat.innerHTML += `
+<div class="ai-message">
+${reply}
+</div>
+`;
 
-   const reply = data.data?.reply || "Sorry, I couldn't generate a reply.";
+chat.scrollTop = chat.scrollHeight;
+} catch(error){
+
+   console.error(error);
 
    chat.innerHTML += `
    <div class="ai-message">
-   ${reply}
+   ⚠️ Unable to contact Enock AI. Please try again.
    </div>
    `;
 
    chat.scrollTop = chat.scrollHeight;
 
-} catch(error){
-
-   console.error(error);
-
-   alert(error.message);
-
-   chat.innerHTML += `
-   <div class="ai-message">
-   ⚠️ ${error.message}
-   </div>
-   `;
-
-}
-
+ }
 }
 </script>
 
