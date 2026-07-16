@@ -892,7 +892,11 @@ window.aiUser = {
     loanLimit: (data.wallet || 0) * 5,
     investment: data.investment || null,
     referrals: data.referrals || 0,
-    activeLoan: data.activeLoan || null
+    activeLoan: data.activeLoan || null,
+
+    accountStatus: data.status || "Active",
+    joined: data.createdAt || null,
+    lastLogin: Date.now()
 };
 
 document.getElementById("userGreeting").innerHTML =
