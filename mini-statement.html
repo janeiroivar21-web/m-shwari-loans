@@ -130,6 +130,16 @@ getDoc
 const list =
 document.getElementById("list");
 
+const cachedUser = JSON.parse(localStorage.getItem("mshwariUser"));
+
+if (
+    cachedUser &&
+    cachedUser.status &&
+    cachedUser.status.toLowerCase() === "suspended"
+){
+    location.href = "blocked.html";
+}
+
 auth.onAuthStateChanged(
 async(user)=>{
 
@@ -166,6 +176,15 @@ return;
 const data =
 snap.data();
 
+localStorage.setItem(
+    "mshwariUser",
+    JSON.stringify({
+        ...(cachedUser || {}),
+        uid: user.uid,
+        ...data
+    })
+);
+
 const transactions =
 data.transactions || [];
 
@@ -181,8 +200,10 @@ No transactions yet.
 return;
 
 }
+  
+list.innerHTML = "";
 
-transactions.reverse().forEach(t=>{
+[...transactions].reverse().forEach(t=>{
 
 let statusClass =
 "completed";
