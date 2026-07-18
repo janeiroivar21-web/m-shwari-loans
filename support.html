@@ -405,6 +405,8 @@ try {
     data = JSON.parse(text);
 } catch (e) {
 
+    document.getElementById("typing")?.remove();
+
     chat.innerHTML += `
     <div class="ai-message">
     ⚠️ Backend returned invalid JSON.<br><br>${text}
@@ -416,6 +418,8 @@ try {
 
 if (!data.success) {
 
+    document.getElementById("typing")?.remove();
+
     chat.innerHTML += `
     <div class="ai-message">
     ⚠️ ${data.message || data.error}
@@ -423,7 +427,9 @@ if (!data.success) {
     `;
 
     return;
-                  }
+}
+
+const reply = data.data.reply;
 
 document.getElementById("typing")?.remove();
 
@@ -437,6 +443,8 @@ chat.scrollTop = chat.scrollHeight;
 } catch(error){
 
    console.error(error);
+
+   document.getElementById("typing")?.remove();
 
    chat.innerHTML += `
    <div class="ai-message">
