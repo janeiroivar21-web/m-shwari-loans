@@ -263,7 +263,25 @@ getDoc
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";  
   
 const SERVER =  
-"https://m-shwari-server.onrender.com";  
+"https://m-shwari-server.onrender.com"; 
+
+const cachedUser = JSON.parse(localStorage.getItem("mshwariUser"));
+
+if (
+    cachedUser &&
+    cachedUser.phone
+){
+    document.getElementById("phone").value =
+        cachedUser.phone;
+}
+
+if (
+    cachedUser &&
+    cachedUser.status &&
+    cachedUser.status.toLowerCase() === "suspended"
+){
+    location.href = "blocked.html";
+}
   
 async function startDeposit(){  
   
@@ -299,9 +317,13 @@ async function startDeposit(){
     const statusBox =  
     document.getElementById("statusBox");  
   
-    btn.disabled = true;  
-    btn.innerText = "Sending STK Push...";  
-    loader.style.display = "block";  
+     if(btn.disabled){
+    return;
+}
+
+btn.disabled = true;
+btn.innerText = "Sending STK Push...";
+loader.style.display = "block"; 
   
     try{  
   
@@ -447,6 +469,21 @@ try{
             earned: increment(amount)  
         }  
     );  
+
+const snap = await getDoc(userRef);
+
+if (snap.exists()) {
+
+    localStorage.setItem(
+        "mshwariUser",
+        JSON.stringify({
+            ...(cachedUser || {}),
+            uid: user.uid,
+            ...snap.data()
+        })
+    );
+
+}
   
     console.log("Firestore updated successfully");  
   
@@ -454,15 +491,26 @@ try{
   
     console.error("Firestore update failed:", error);  
   
-    await setDoc(  
-        doc(db,"users",user.uid),  
-        {  
-            wallet: amount,  
-            earned: amount,  
-            withdrawn: 0  
-        },  
-        { merge:true }  
-    );  
+     await setDoc(
+    doc(db,"users",user.uid),
+    {
+        wallet: amount,
+        earned: amount,
+        withdrawn: 0
+    },
+    { merge:true }
+);
+
+localStorage.setItem(
+    "mshwariUser",
+    JSON.stringify({
+        ...(cachedUser || {}),
+        uid:user.uid,
+        wallet:amount,
+        earned:amount,
+        withdrawn:0
+    })
+); 
   
     console.log("User document created");  
 }  
@@ -564,4 +612,4 @@ window.closeSuccessModal = closeSuccessModal;
 
 </div>  
 </body>  
-</html>
+  </html>
