@@ -346,6 +346,15 @@ loader.style.display = "block";
         await response.json();  
   
         console.log(data);  
+
+      if (
+    data.status === "pending" ||
+    data.status === "processing"
+) {
+    statusBox.innerHTML =
+        "⏳ Confirming your payment...";
+    return;
+      }
   
         const checkoutId =  
             data.checkout_request_id ||  
