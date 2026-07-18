@@ -269,6 +269,48 @@ toast.classList.remove("show");
 
 }
 
+const cachedUser = JSON.parse(localStorage.getItem("mshwariUser"));
+
+if (cachedUser) {
+
+    document.getElementById("fullName").innerHTML =
+    cachedUser.fullName || "-";
+
+    document.getElementById("fullName2").innerHTML =
+    cachedUser.fullName || "-";
+
+    document.getElementById("username").innerHTML =
+    "@" + (cachedUser.username || "-");
+
+    document.getElementById("username2").innerHTML =
+    cachedUser.username || "-";
+
+    document.getElementById("email").innerHTML =
+    cachedUser.email || "-";
+
+    document.getElementById("phone").innerHTML =
+    cachedUser.phone || "-";
+
+    document.getElementById("status").innerHTML =
+    cachedUser.status || "Active";
+
+    document.getElementById("walletBalance").innerHTML =
+    "KES " + (cachedUser.wallet || 0).toLocaleString(undefined,{
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+    });
+
+    if (cachedUser.createdAt) {
+
+        const date = new Date(cachedUser.createdAt);
+
+        document.getElementById("createdAt").innerHTML =
+        date.toLocaleDateString();
+
+    }
+
+}
+  
 onAuthStateChanged(auth,async(user)=>{
 
 if(!user){
@@ -285,6 +327,20 @@ const snap=await getDoc(ref);
 if(!snap.exists()) return;
 
 const data=snap.data();
+
+if (
+    data.status &&
+    data.status.toLowerCase() === "suspended"
+) {
+    window.location.href = "blocked.html";
+    return;
+}
+
+// Update local cache
+localStorage.setItem("mshwariUser", JSON.stringify({
+    uid: user.uid,
+    ...data
+}));
 
 document.getElementById("fullName").innerHTML =
 data.fullName || "-";
@@ -309,7 +365,8 @@ data.status || "Active";
 
 document.getElementById("walletBalance").innerHTML =
 "KES " + (data.wallet || 0).toLocaleString(undefined,{
-minimumFractionDigits:2
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
 });
 
 if(data.createdAt){
@@ -326,6 +383,7 @@ date.toLocaleDateString();
 document.getElementById("logoutBtn")
 .addEventListener("click",async()=>{
 
+localStorage.removeItem("mshwariUser");
 await signOut(auth);
 
 showToast("Logged out successfully");
@@ -339,4 +397,4 @@ window.location.href="login.html";
 </script>
 
 </body>
-</html>
+  </html>
