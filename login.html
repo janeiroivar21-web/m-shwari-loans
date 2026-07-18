@@ -226,7 +226,7 @@ onAuthStateChanged(auth, async (user) => {
         userData.status &&
         userData.status.toLowerCase() === "suspended"
     ) {
-        location.replace("block.html");
+        location.replace("blocked.html");
         return;
     }
 
