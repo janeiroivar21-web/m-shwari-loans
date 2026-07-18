@@ -254,13 +254,14 @@ button:disabled{
 </div>  <script type="module">  
 import { auth, db } from "./firebase.js";  
   
-import {  
-doc,  
-updateDoc,  
-increment,  
-setDoc,  
-getDoc  
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";  
+import {
+doc,
+updateDoc,
+increment,
+arrayUnion,
+setDoc,
+getDoc
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";  
   
 const SERVER =  
 "https://m-shwari-server.onrender.com"; 
@@ -375,7 +376,7 @@ loader.style.display = "block";
 
     }
 
-}, 1500);
+}, 2000);
   
     } catch(error){  
   
@@ -491,13 +492,19 @@ try{
     console.log("USER UID:", user.uid);  
     console.log("AMOUNT:", amount);  
   
-    await updateDoc(  
-        userRef,  
-        {  
-            wallet: increment(amount),  
-            earned: increment(amount)  
-        }  
-    );  
+    await updateDoc(
+    userRef,
+    {
+        wallet: increment(amount),
+        earned: increment(amount),
+        transactions: arrayUnion({
+            type: "Deposit",
+            amount: amount,
+            status: "Completed",
+            date: new Date().toLocaleString()
+        })
+    }
+);  
 
 const snap = await getDoc(userRef);
 
@@ -525,11 +532,18 @@ if (snap.exists()) {
     {
         wallet: amount,
         earned: amount,
-        withdrawn: 0
+        withdrawn: 0,
+        transactions: [
+            {
+                type: "Deposit",
+                amount: amount,
+                status: "Completed",
+                date: new Date().toLocaleString()
+            }
+        ]
     },
     { merge:true }
 );
-
 localStorage.setItem(
     "mshwariUser",
     JSON.stringify({
