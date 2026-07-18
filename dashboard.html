@@ -741,8 +741,62 @@ updateDoc,
 getDocs
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-document.getElementById("walletBalance").innerHTML = "Loading...";
-showToast("Loading dashboard...");
+const cachedUser = JSON.parse(localStorage.getItem("mshwariUser"));
+
+if (cachedUser) {
+    window.aiUser = cachedUser;
+}
+
+if (cachedUser) {
+
+    // Wallet
+    document.getElementById("walletBalance").innerHTML =
+        "KES " + (cachedUser.wallet || 0).toLocaleString(undefined,{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+    // Greeting
+    document.getElementById("userGreeting").innerHTML =
+        cachedUser.fullName || "M-SHWARI Member";
+
+    // Loan Limit
+    document.getElementById("loanLimit").innerHTML =
+        "KSH " + ((cachedUser.wallet || 0) * 5).toLocaleString(undefined,{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+    // Earned
+    document.querySelector(".wallet-stats span:first-child").innerHTML =
+        "↑ Earned: KES " + (cachedUser.earned || 0).toLocaleString();
+
+    // Withdrawn
+    document.querySelector(".wallet-stats span:last-child").innerHTML =
+        "↓ Withdrawn: KES " + (cachedUser.withdrawn || 0).toLocaleString();
+
+    // Investment
+    if (cachedUser.investment && cachedUser.investment.amount) {
+
+        document.getElementById("investmentAmount").innerHTML =
+            "KSH " + cachedUser.investment.amount.toLocaleString();
+
+        document.getElementById("totalInvestment").innerHTML =
+            "KSH " + cachedUser.investment.amount.toLocaleString();
+
+    } else {
+
+        document.getElementById("investmentAmount").innerHTML = "KSH 0.00";
+        document.getElementById("totalInvestment").innerHTML = "KSH 0.00";
+
+    }
+
+} else {
+
+    document.getElementById("walletBalance").innerHTML = "KES 0.00";
+
+}
+  
 function showToast(message,type="success"){
 
 const toast=document.getElementById("toast");
@@ -879,6 +933,21 @@ return;
 }
 
 const data = snap.data();
+
+// Save latest user data
+localStorage.setItem("mshwariUser", JSON.stringify({
+    uid: userId,
+    ...data
+}));
+
+// Check account status
+if (
+    data.status &&
+    data.status.toLowerCase() === "suspended"
+) {
+    location.replace("blocked.html");
+    return;
+}
 
 // Make current user data available to the AI
 window.aiUser = {
@@ -1069,7 +1138,8 @@ import { signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-aut
 
 window.logoutUser = async function () {
     try {
-        await signOut(auth);
+        localStorage.removeItem("mshwariUser");
+await signOut(auth);
         showToast("Logged out successfully");
 
         setTimeout(() => {
@@ -1221,4 +1291,4 @@ Your Financial Growth Partner
 <div id="toast"></div>
 
 </body>
-</html>
+    </html>
