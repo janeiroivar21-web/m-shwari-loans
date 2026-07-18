@@ -187,9 +187,9 @@ query,
 where,
 getDocs,
 doc,
-updateDoc
+updateDoc,
+getDoc
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyAWTWSMZelhkMvhS8nyJQ6Jh5JCRoAKyJM",
   authDomain: "m-shwari-abfe3.firebaseapp.com",
@@ -201,12 +201,37 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-onAuthStateChanged(auth,(user)=>{
-if(user){
-window.location.href="dashboard.html";
-}
-});
 const db = getFirestore(app);
+  
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) return;
+
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
+
+    if (!snap.exists()) {
+        location.replace("dashboard.html");
+        return;
+    }
+
+    const userData = {
+        uid: user.uid,
+        ...snap.data()
+    };
+
+    localStorage.setItem("mshwariUser", JSON.stringify(userData));
+
+    if (
+        userData.status &&
+        userData.status.toLowerCase() === "suspended"
+    ) {
+        location.replace("block.html");
+        return;
+    }
+
+    location.replace("dashboard.html");
+});
   
 function showToast(message,type="success"){
 
@@ -269,13 +294,13 @@ else{
 const q = query(collection(db,"users"), where("username","==",identifier));
 const snap = await getDocs(q);
 
-if(snap.empty){
+if (snap.empty) {
 
-loginBtn.disabled = false;
-loginBtn.textContent = "Login";
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Login";
 
-showToast("User not found","error");
-
+    showToast("User not found", "error");
+    return;
 }
 
 snap.forEach(doc=>{
@@ -286,18 +311,47 @@ email = doc.data().email;
 const userCredential =
 await signInWithEmailAndPassword(auth,email,password);
 
-await updateDoc(
-doc(db,"users",userCredential.user.uid),
-{
-lastLogin: Date.now()
+// Update last login
+const userRef = doc(db, "users", userCredential.user.uid);
+
+await updateDoc(userRef, {
+    lastLogin: Date.now()
+});
+
+// Read latest user data
+const userSnap = await getDoc(userRef);
+
+if (userSnap.exists()) {
+
+    const userData = {
+        uid: userCredential.user.uid,
+        ...userSnap.data()
+    };
+
+    // Save locally
+    localStorage.setItem("mshwariUser", JSON.stringify(userData));
+
+    // Check account status
+    if (
+        userData.status &&
+        userData.status.toLowerCase() === "suspended"
+    ) {
+
+        showToast("Your account has been suspended.", "error");
+
+        setTimeout(() => {
+            location.replace("blocked.html");
+        }, 1000);
+
+        return;
+    }
 }
-);
 
 showToast("Login successful!");
 
-setTimeout(()=>{
-window.location.href="dashboard.html";
-},1000);
+setTimeout(() => {
+    location.replace("dashboard.html");
+}, 1000);
 
 } catch(err){
 
@@ -338,7 +392,7 @@ showToast(message,"error");
 // 🔥 FORGOT PASSWORD → WHATSAPP ADMIN
 window.forgotPassword = function(){
 
-let number = "2547XXXXXXXX";
+let number = "254103147454";
 let message = "Hello Admin, I forgot my M-SHWARI password. Please assist me.";
 
 let url = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
