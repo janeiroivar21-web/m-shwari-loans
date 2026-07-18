@@ -371,6 +371,14 @@ input.value="";
 
 try{
 
+chat.innerHTML += `
+<div class="ai-message" id="typing">
+🤖 Enock is typing...
+</div>
+`;
+
+chat.scrollTop = chat.scrollHeight;
+
    let response = await fetch(
       "https://ai-backend-s5oy.onrender.com/api/chat.php",
       {
@@ -417,11 +425,11 @@ if (!data.success) {
     return;
                   }
 
-const reply = data.data.reply;
+document.getElementById("typing")?.remove();
 
 chat.innerHTML += `
-<div class="ai-message" id="typing">
-🤖 AI is typing...
+<div class="ai-message">
+${reply}
 </div>
 `;
 
@@ -441,6 +449,13 @@ chat.scrollTop = chat.scrollHeight;
 
  }
 }
+
+ aiInput.addEventListener("keypress",(e)=>{
+    if(e.key==="Enter"){
+        e.preventDefault();
+        sendAI();
+    }
+});
 </script>
 
 </body>
