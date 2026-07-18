@@ -429,7 +429,9 @@ async function checkPaymentStatus(
     document.getElementById("loader");  
   
     const statusBox =  
-    document.getElementById("statusBox");  
+    document.getElementById("statusBox"); 
+
+   let paymentProcessed = false;
   
     const interval =  
     setInterval(async()=>{  
@@ -456,7 +458,13 @@ async function checkPaymentStatus(
   
             console.log(data);  
   
-            if (data.status === "completed") {  
+            if (data.status === "completed") {
+
+              if (paymentProcessed) {
+    return;
+}
+
+paymentProcessed = true;
             console.log("PAYMENT COMPLETED");  
   
     clearInterval(interval);  
