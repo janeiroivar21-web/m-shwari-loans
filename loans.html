@@ -176,6 +176,17 @@ increment
 
 let wallet = 0;
 
+const cachedUser = JSON.parse(localStorage.getItem("mshwariUser"));
+
+if (cachedUser) {
+
+    wallet = Number(cachedUser.wallet || 0);
+
+    document.getElementById("wallet").innerText =
+        wallet.toLocaleString();
+
+}
+
 // Load wallet from Firestore
 async function loadWallet(){
 
@@ -195,6 +206,19 @@ async function loadWallet(){
     }
 
     const data = snap.data();
+
+  if (
+    data.status &&
+    data.status.toLowerCase() === "suspended"
+){
+    location.href = "blocked.html";
+    return;
+}
+
+localStorage.setItem("mshwariUser", JSON.stringify({
+    uid:user.uid,
+    ...data
+}));
 
     wallet = Number(data.wallet || 0);
 
@@ -216,7 +240,7 @@ window.applyLoan = async function(){
             document.getElementById("loanAmount").value
         );
 
-    if(amount < 5000 || amount > 100000){
+    if(amount < 5000 || amount > 1000000){
 
         document.getElementById("resultBox").style.display = "block";
 
@@ -261,6 +285,14 @@ await updateDoc(userRef, {
     loanStatus: "Pending",
     loanUpdatedAt: new Date().toISOString()
 });
+
+  const cached = JSON.parse(localStorage.getItem("mshwariUser")) || {};
+
+cached.qualifiedLoan = amount;
+cached.loanStatus = "Pending";
+cached.loanUpdatedAt = new Date().toISOString();
+
+localStorage.setItem("mshwariUser", JSON.stringify(cached));
 
     // Show congratulations popup
     document.getElementById("approvedAmount").innerText =
@@ -368,7 +400,7 @@ auth.onAuthStateChanged((user)=>{
     </div>
 
     <div class="info">
-        ⭐ Frequent deposits and responsible use of M-SHWARI help increase your loan limit from <b>KES 5,000 up to KES 100,000</b>.
+        ⭐ Frequent deposits and responsible use of M-SHWARI help increase your loan limit from <b>KES 5,000 up to KES 1,000,000</b>.
     </div>
 
     <div class="info good">
@@ -384,4 +416,4 @@ auth.onAuthStateChanged((user)=>{
     Deposit Funds Now
 </button>
 </body>
-</html>
+    </html>
