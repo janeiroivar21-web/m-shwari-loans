@@ -245,6 +245,7 @@ import {
     getDoc,
     updateDoc,
     increment,
+    arrayUnion,
     setDoc,
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
@@ -394,12 +395,18 @@ if (userData.withdrawLocked === true) {
         }
 
         await updateDoc(
-            userRef,
-            {
-                wallet: increment(-amount),
-                withdrawn: increment(amount)
-            }
-        );
+    userRef,
+    {
+        wallet: increment(-amount),
+        withdrawn: increment(amount),
+        transactions: arrayUnion({
+            type: "Withdrawal",
+            amount: amount,
+            status: "Completed",
+            date: new Date().toLocaleString()
+        })
+    }
+);
 
          const updatedSnap = await getDoc(userRef);
 
@@ -412,23 +419,6 @@ console.log(
     "NEW WITHDRAWN:",
     updatedSnap.data().withdrawn
 );
-
-        let transactions =
-            JSON.parse(
-                localStorage.getItem("transactions")
-            ) || [];
-
-        transactions.push({
-    type:"Withdrawal",
-    amount:amount,
-    status:"Completed",
-    date:new Date().toLocaleString()
-});
-
-        localStorage.setItem(
-            "transactions",
-            JSON.stringify(transactions)
-        );
 
         document.getElementById(
             "successText"
