@@ -366,6 +366,16 @@ loader.style.display = "block";
     checkoutId,  
     amount  
 );  
+      setTimeout(() => {
+
+    if (statusBox.style.display === "block") {
+
+        statusBox.innerHTML =
+        "⏳ Waiting for payment confirmation...";
+
+    }
+
+}, 1500);
   
     } catch(error){  
   
@@ -552,7 +562,7 @@ showSuccessModal(amount);
             console.log(error);  
         }  
   
-    },5000);  
+    },1500);  
 }  
   
 function showFailModal(message){  
