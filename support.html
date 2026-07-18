@@ -193,6 +193,29 @@ let currentUser = null;
 let firebaseReady = false;
 let aiUser = {};
 
+const cachedUser = JSON.parse(localStorage.getItem("mshwariUser"));
+
+if (cachedUser) {
+
+    fullName.value = cachedUser.fullName || "";
+    email.value = cachedUser.email || "";
+
+    aiUser = {
+        uid: cachedUser.uid || "",
+        fullName: cachedUser.fullName || "",
+        email: cachedUser.email || "",
+        phone: cachedUser.phone || "",
+        wallet: cachedUser.wallet || 0,
+        earned: cachedUser.earned || 0,
+        withdrawn: cachedUser.withdrawn || 0,
+        loanLimit: (cachedUser.wallet || 0) * 5,
+        investment: cachedUser.investment || null,
+        referrals: cachedUser.referrals || 0,
+        activeLoan: cachedUser.activeLoan || null
+    };
+
+}
+
 let aiSession = localStorage.getItem("enockSession");
 
 if(!aiSession){
@@ -231,6 +254,19 @@ onAuthStateChanged(auth, async(user)=>{
  if(snap.exists()){
 
    const data = snap.data();
+
+  if (
+    data.status &&
+    data.status.toLowerCase() === "suspended"
+){
+    location.href = "blocked.html";
+    return;
+}
+
+localStorage.setItem("mshwariUser", JSON.stringify({
+    uid: user.uid,
+    ...data
+}));
 
    fullName.value = data.fullName || "";
    email.value = data.email || "";
@@ -384,8 +420,8 @@ if (!data.success) {
 const reply = data.data.reply;
 
 chat.innerHTML += `
-<div class="ai-message">
-${reply}
+<div class="ai-message" id="typing">
+🤖 AI is typing...
 </div>
 `;
 
