@@ -87,6 +87,25 @@ deleteDoc
 
 let userRef=null;
 
+const cachedUser = JSON.parse(localStorage.getItem("mshwariUser"));
+
+if (cachedUser) {
+
+    fullName.value = cachedUser.fullName || "";
+    username.value = cachedUser.username || "";
+    phone.value = cachedUser.phone || "";
+
+    if (cachedUser.notifications) {
+        loanNotify.checked = !!cachedUser.notifications.loans;
+        investNotify.checked = !!cachedUser.notifications.investments;
+        promoNotify.checked = !!cachedUser.notifications.promotions;
+    }
+
+    theme.value = cachedUser.theme || "light";
+    language.value = cachedUser.language || "en";
+
+}
+
 function toast(msg){
  const t=document.getElementById("toast");
  t.innerText=msg;
@@ -107,6 +126,19 @@ onAuthStateChanged(auth, async(user)=>{
 
  const data=snap.data();
 
+if (
+    data.status &&
+    data.status.toLowerCase() === "suspended"
+) {
+    location.href = "blocked.html";
+    return;
+}
+
+localStorage.setItem("mshwariUser", JSON.stringify({
+    uid: user.uid,
+    ...data
+}));
+
  fullName.value=data.fullName||"";
  username.value=data.username||"";
  phone.value=data.phone||"";
@@ -123,15 +155,31 @@ onAuthStateChanged(auth, async(user)=>{
 
 saveProfile.onclick=async()=>{
  await updateDoc(userRef,{
-   fullName:fullName.value,
-   displayName:fullName.value,
-   username:username.value
- });
+   fullName: fullName.value,
+   displayName: fullName.value,
+   username: username.value
+});
+
+const cached = JSON.parse(localStorage.getItem("mshwariUser")) || {};
+
+localStorage.setItem("mshwariUser", JSON.stringify({
+    ...cached,
+    fullName: fullName.value,
+    displayName: fullName.value,
+    username: username.value
+}));
  toast("Profile updated");
 };
 
 savePhone.onclick=async()=>{
  await updateDoc(userRef,{phone:phone.value});
+
+const cached = JSON.parse(localStorage.getItem("mshwariUser")) || {};
+
+localStorage.setItem("mshwariUser", JSON.stringify({
+    ...cached,
+    phone: phone.value
+}));
  toast("Phone updated");
 };
 
@@ -142,6 +190,16 @@ saveNotifications.onclick=async()=>{
   investments:investNotify.checked,
   promotions:promoNotify.checked
  }});
+
+const cached = JSON.parse(localStorage.getItem("mshwariUser")) || {};
+
+cached.notifications = {
+    loans: loanNotify.checked,
+    investments: investNotify.checked,
+    promotions: promoNotify.checked
+};
+
+localStorage.setItem("mshwariUser", JSON.stringify(cached));
  toast("Notifications saved");
 };
 
@@ -150,13 +208,30 @@ saveApp.onclick=async()=>{
    theme:theme.value,
    language:language.value
  });
+
+const cached = JSON.parse(localStorage.getItem("mshwariUser")) || {};
+
+cached.theme = theme.value;
+cached.language = language.value;
+
+localStorage.setItem("mshwariUser", JSON.stringify(cached));
  toast("Settings saved");
 };
 
 deactivateBtn.onclick=async()=>{
+
  if(!confirm("Deactivate account?")) return;
- await updateDoc(userRef,{status:"deactivated"});
- toast("Account deactivated");
+
+ await updateDoc(userRef,{
+     status:"deactivated"
+ });
+
+ localStorage.removeItem("mshwariUser");
+
+ await signOut(auth);
+
+ location.href="login.html";
+
 };
 
 deleteBtn.onclick=async()=>{
@@ -166,6 +241,9 @@ deleteBtn.onclick=async()=>{
  try{
    await deleteDoc(userRef);
    await deleteUser(auth.currentUser);
+
+   localStorage.removeItem("mshwariUser");
+   
    location.href="login.html";
  }catch(e){
    alert("Firebase may require recent login before deletion: "+e.message);
@@ -173,8 +251,13 @@ deleteBtn.onclick=async()=>{
 };
 
 logoutBtn.onclick=async()=>{
+
+ localStorage.removeItem("mshwariUser");
+
  await signOut(auth);
+
  location.href="login.html";
+
 };
 </script>
 </body>
