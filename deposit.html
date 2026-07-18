@@ -347,15 +347,6 @@ loader.style.display = "block";
   
         console.log(data);  
 
-      if (
-    data.status === "pending" ||
-    data.status === "processing"
-) {
-    statusBox.innerHTML =
-        "⏳ Confirming your payment...";
-    return;
-      }
-  
         const checkoutId =  
             data.checkout_request_id ||  
             data.CheckoutRequestID;  
@@ -456,7 +447,18 @@ async function checkPaymentStatus(
             const data =  
             await response.json();  
   
-            console.log(data);  
+            console.log(data); 
+
+          if (
+    data.status === "pending" ||
+    data.status === "processing"
+) {
+
+    statusBox.innerHTML =
+    "⏳ Confirming your payment...";
+
+    return;
+  }
   
             if (data.status === "completed") {
 
