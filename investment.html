@@ -224,6 +224,19 @@ updateDoc
 
 let currentUser=null;
 
+const cachedUser = JSON.parse(localStorage.getItem("mshwariUser"));
+
+if (cachedUser) {
+
+    document.getElementById("walletBalance").innerHTML =
+    "KES " +
+    (cachedUser.wallet || 0).toLocaleString(undefined,{
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+    });
+
+}
+
 function showToast(message){
 
 const toast=document.getElementById("toast");
@@ -248,6 +261,11 @@ max
 
 const amount=
 Number(document.getElementById(amountId).value);
+
+if (!currentUser) {
+    showToast("Please wait...");
+    return;
+}
 
 if(!amount){
 
@@ -297,6 +315,14 @@ return;
 
 const data=snap.data();
 
+if (
+    data.status &&
+    data.status.toLowerCase() === "suspended"
+) {
+    window.location.href = "blocked.html"; // or blocked.html if that's your actual page
+    return;
+}
+  
 const wallet=data.wallet || 0;
 
 if(wallet < amount){
@@ -326,6 +352,24 @@ paid:false
 }
 
 });
+
+// Update local cache immediately
+const updatedUser = {
+    ...data,
+    wallet: wallet - amount,
+    investment: {
+        amount: amount,
+        rate: rate,
+        duration: duration,
+        startTime: Date.now(),
+        paid: false
+    }
+};
+
+localStorage.setItem("mshwariUser", JSON.stringify({
+    uid: currentUser.uid,
+    ...updatedUser
+}));
 
 showToast("Investment successful");
 
@@ -358,11 +402,26 @@ if(snap.exists()){
 
 const data=snap.data();
 
+if (
+    data.status &&
+    data.status.toLowerCase() === "suspended"
+) {
+    window.location.href = "blocked.html";
+    return;
+}
+  
+// Update cache
+localStorage.setItem("mshwariUser", JSON.stringify({
+    uid: user.uid,
+    ...data
+}));
+
+// Refresh balance
 document.getElementById("walletBalance").innerHTML =
 "KES " +
 (data.wallet || 0).toLocaleString(undefined,{
-minimumFractionDigits:2,
-maximumFractionDigits:2
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
 });
 
 }
@@ -372,4 +431,4 @@ maximumFractionDigits:2
 </script>
 
 </body>
-</html>
+  </html>
