@@ -1035,7 +1035,8 @@ if(!investmentData.paid){
 await updateDoc(ref,{
     wallet:(data.wallet || 0) + totalReturn,
     earned:(data.earned || 0) + profit,
-    investment:null
+    "investment.paid": true,
+    investment: null
 });
 
 }
