@@ -880,6 +880,15 @@ return;
 
 const data = snap.data();
 
+// Save latest user data to localStorage
+const cachedUser = {
+    uid: userId,
+    ...data,
+    lastCached: Date.now()
+};
+
+localStorage.setItem("mshwariUser", JSON.stringify(cachedUser));
+
 // Make current user data available to the AI
 window.aiUser = {
     uid: userId,
@@ -1031,10 +1040,37 @@ document.getElementById("timeLeft").innerHTML = "--";
 (error)=>{
 
 console.error("FIRESTORE ERROR:", error);
-showToast(error.message,"error");
+
+const cached = localStorage.getItem("mshwariUser");
+
+if(cached){
+
+    const data = JSON.parse(cached);
+
+    document.getElementById("userGreeting").textContent =
+        data.fullName || "M-SHWARI Member";
+
+    document.getElementById("walletBalance").innerHTML =
+        "KES " + Number(data.wallet || 0).toLocaleString(undefined,{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+    document.getElementById("loanLimit").innerHTML =
+        "KSH " + ((data.wallet || 0) * 5).toLocaleString(undefined,{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+    showToast("Showing cached data");
+
+}else{
+
+    showToast(error.message,"error");
+
+}
 
 });
-
 }
 
 updateGreeting();
@@ -1069,16 +1105,22 @@ import { signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-aut
 
 window.logoutUser = async function () {
     try {
+
+        localStorage.removeItem("mshwariUser");
+
         await signOut(auth);
+
         showToast("Logged out successfully");
 
-        setTimeout(() => {
-            window.location.href = "login.html";
-        }, 1000);
+        setTimeout(()=>{
+            window.location.href="login.html";
+        },1000);
 
-    } catch (error) {
+    } catch(error){
+
         console.error(error);
-        showToast("Logout failed", "error");
+        showToast("Logout failed","error");
+
     }
 }
 
