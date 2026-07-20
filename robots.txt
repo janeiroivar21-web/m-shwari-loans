@@ -1,0 +1,26 @@
+# robots.txt for M-SHWARI
+# https://m-shwari.co.ke
+
+User-agent: *
+Allow: /
+
+# Prevent indexing of private pages
+Disallow: /dashboard.html
+Disallow: /profile.html
+Disallow: /settings.html
+Disallow: /wallet.html
+Disallow: /deposit.html
+Disallow: /withdraw.html
+Disallow: /loan.html
+Disallow: /investment.html
+Disallow: /notifications.html
+Disallow: /admin/
+Disallow: /api/
+Disallow: /firebase/
+Disallow: /vendor/
+Disallow: /config/
+Disallow: /includes/
+Disallow: /private/
+
+# Sitemap location
+Sitemap: https://m-shwari.co.ke/sitemap.xml
