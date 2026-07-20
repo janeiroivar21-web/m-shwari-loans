@@ -1101,9 +1101,12 @@ document.getElementById("timeLeft").innerHTML = "--";
 (error)=>{
 
 console.error("FIRESTORE ERROR:", error);
-showToast(error.message,"error");
 
-});
+alert(
+"Message: " + error.message +
+"\nCode: " + error.code +
+"\nName: " + error.name
+);
 
 }
 
