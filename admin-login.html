@@ -125,8 +125,12 @@ window.location.href =
 
 }catch(err){
 
-error.innerText =
-err.message;
+console.error("FULL ERROR:", err);
+
+error.innerHTML =
+`Message: ${err.message}<br>
+Code: ${err.code}<br>
+Name: ${err.name}`;
 
 }
 
