@@ -888,6 +888,7 @@ const cachedUser = {
 };
 
 localStorage.setItem("mshwariUser", JSON.stringify(cachedUser));
+localStorage.setItem("currentUid", userId);
 
 // Make current user data available to the AI
 window.aiUser = {
@@ -1042,8 +1043,9 @@ document.getElementById("timeLeft").innerHTML = "--";
 console.error("FIRESTORE ERROR:", error);
 
 const cached = localStorage.getItem("mshwariUser");
+const cachedUid = localStorage.getItem("currentUid");
 
-if(cached){
+if (cached && cachedUid === auth.currentUser?.uid) {
 
     const data = JSON.parse(cached);
 
@@ -1105,8 +1107,6 @@ import { signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-aut
 
 window.logoutUser = async function () {
     try {
-
-        localStorage.removeItem("mshwariUser");
 
         await signOut(auth);
 
