@@ -522,8 +522,8 @@ max-width:240px;
 </div>
 
 <div class="welcome">
-<h2 id="greetingTitle">Loading...</h2>
-<p id="userGreeting">Loading...</p>
+<h2 id="greetingTitle">Welcome back!</h2>
+<p id="userGreeting">M-SHWARI Member</p>
 <small style="color:#888;">
 Your Financial Growth Partner
 </small>
@@ -741,8 +741,6 @@ updateDoc,
 getDocs
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-document.getElementById("walletBalance").innerHTML = "Loading...";
-showToast("Loading dashboard...");
 function showToast(message,type="success"){
 
 const toast=document.getElementById("toast");
@@ -760,6 +758,41 @@ toast.className="";
 
 }
 console.log("Dashboard script loaded");
+
+loadCachedUser();
+
+function loadCachedUser(){
+
+    const cached = localStorage.getItem("mshwariUser");
+
+    if(!cached) return;
+
+    const data = JSON.parse(cached);
+
+    document.getElementById("userGreeting").textContent =
+        data.fullName || "M-SHWARI Member";
+
+    document.getElementById("walletBalance").innerHTML =
+        "KES " + Number(data.wallet || 0).toLocaleString(undefined,{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+    document.getElementById("loanLimit").innerHTML =
+        "KSH " + ((data.wallet || 0) * 5).toLocaleString(undefined,{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+    document.querySelector(".wallet-stats span:first-child").innerHTML =
+        "↑ Earned: KES " + Number(data.earned || 0).toLocaleString();
+
+    document.querySelector(".wallet-stats span:last-child").innerHTML =
+        "↓ Withdrawn: KES " + Number(data.withdrawn || 0).toLocaleString();
+
+    // Make cached data available to AI too
+    window.aiUser = data;
+}
 
 function updateGreeting() {
     const hour = new Date().getHours();
