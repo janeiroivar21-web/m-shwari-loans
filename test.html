@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Firestore Test</h2>
+<p id="result">Testing...</p>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAWTWSMZelhkMvhS8nyJQ6Jh5JCRoAKyJM",
+  authDomain: "m-shwari-abfe3.firebaseapp.com",
+  projectId: "m-shwari-abfe3",
+  storageBucket: "m-shwari-abfe3.firebasestorage.app",
+  messagingSenderId: "713338202870",
+  appId: "1:713338202870:web:505e67b052300ebd5d5ad7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+try {
+    const snap = await getDoc(doc(db, "admins", "ENOCKBOSS"));
+
+    document.getElementById("result").innerHTML =
+        snap.exists()
+        ? "✅ Connected to Firestore"
+        : "❌ Document not found";
+} catch (e) {
+    document.getElementById("result").innerHTML =
+        "Error: " + e.code + "<br>" + e.message;
+}
+</script>
+
+</body>
+</html>
