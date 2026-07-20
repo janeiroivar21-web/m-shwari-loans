@@ -792,6 +792,29 @@ function loadCachedUser(){
 
     // Make cached data available to AI too
     window.aiUser = data;
+    if (data.investment && data.investment.amount) {
+
+    document.getElementById("investmentAmount").innerHTML =
+        "KSH " + Number(data.investment.amount).toLocaleString();
+
+    document.getElementById("totalInvestment").innerHTML =
+        "KSH " + Number(data.investment.amount).toLocaleString();
+
+    const profit =
+        data.investment.amount * (data.investment.rate || 0.10);
+
+    document.getElementById("investProfit").innerHTML =
+        "KSH " + profit.toLocaleString();
+
+    document.getElementById("investStatus").innerHTML = "Active";
+
+} else {
+
+    document.getElementById("investmentAmount").innerHTML = "KSH 0.00";
+    document.getElementById("totalInvestment").innerHTML = "KSH 0.00";
+    document.getElementById("investProfit").innerHTML = "KSH 0.00";
+    document.getElementById("investStatus").innerHTML = "No Active Investment";
+    }
 }
 
 function updateGreeting() {
