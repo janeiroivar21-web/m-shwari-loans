@@ -348,9 +348,10 @@ loader.style.display = "block";
   
         console.log(data);  
 
-        const checkoutId =  
-            data.checkout_request_id ||  
-            data.CheckoutRequestID;  
+        const checkoutId =
+           data.checkout_request_id ||
+           data.CheckoutRequestID ||
+           data.data?.checkout_request_id;  
   
         if(!checkoutId){  
             throw new Error(  
@@ -496,7 +497,6 @@ try{
     userRef,
     {
         wallet: increment(amount),
-        earned: increment(amount),
         transactions: arrayUnion({
             type: "Deposit",
             amount: amount,
